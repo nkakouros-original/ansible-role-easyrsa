@@ -2,6 +2,13 @@
 
 - name: Prepare
   hosts: all
+  vars:
+    # Generate certificates to revoke during Converge
+    easyrsa_pki_dir: /etc/easyrsa/pki
+    easyrsa_clients:
+      - old_client
+  roles:
+    - role: nkakouros.easyrsa
   tasks:
     - name: Install git
       package:
