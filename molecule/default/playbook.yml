@@ -8,7 +8,9 @@
     easyrsa_clients:
       - client1
       - client2
-    easyrsa_renew: "{{ easyrsa_clients }}"
+    easyrsa_renew:
+      - name: client
+        reason: unspecified
     easyrsa_revoked: "{{ easyrsa_clients }}"
     easyrsa_generate_dh: true
   roles:
