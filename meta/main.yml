@@ -1,8 +1,9 @@
 ---
 
 galaxy_info:
+  role_name: easyrsa
   author: Nikolaos Kakouros
-  description: Installs easyrsa
+  description: Installs easyrsa and generates keys and certificates
 
   license: GPLv3
 

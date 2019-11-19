@@ -5,7 +5,7 @@ Status](https://travis-ci.com/nkakouros-original/ansible-role-easyrsa.svg?branch
 Ansible Role: EasyRSA
 =========
 
-Installs EasyRSA and generates certificates and keys.
+Installs EasyRSA 3 and generates certificates and keys.
 
 Requirements
 ------------
