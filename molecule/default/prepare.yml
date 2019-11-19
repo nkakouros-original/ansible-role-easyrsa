@@ -9,7 +9,7 @@
       - old_client
   roles:
     - role: nkakouros.easyrsa
-  tasks:
+  pre_tasks:
     - name: Install git
       package:
         name: git
