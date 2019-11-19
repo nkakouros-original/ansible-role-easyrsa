@@ -7,7 +7,7 @@
   register: _result
   failed_when:
     - _result is failed
-    - _result is not search('nexpected input in file')
+    - _result is not search('as the input file is not a valid certificate')
   changed_when: _result is not failed
 
 - name: Generate CRL
