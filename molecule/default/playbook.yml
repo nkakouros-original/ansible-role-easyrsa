@@ -9,7 +9,7 @@
       - client1
       - client2
     easyrsa_renew: "{{ easyrsa_clients }}"
-    easyrsa_revoke: "{{ easyrsa_clients }}"
+    easyrsa_revoked: "{{ easyrsa_clients }}"
     easyrsa_generate_dh: true
   roles:
     - role: nkakouros.easyrsa
