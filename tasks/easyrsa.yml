@@ -10,6 +10,10 @@
 
 - include_tasks: renew.yml
 
-- include_tasks: revoke.yml
+- include_tasks:
+    file: revoke.yml
+    apply:
+      tags: easyrsa-revoke
+  tags: easyrsa-revoke
 
 - include_tasks: dh.yml
