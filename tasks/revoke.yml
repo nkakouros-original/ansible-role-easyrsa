@@ -1,7 +1,8 @@
 ---
 
 - name: Revoke certificates
-  command: easyrsa revoke "{{ item.name }}" "{{ item.reason | default('unspecified') }}"
+  command: >-
+    easyrsa revoke {{ item.name }} {{ item.reason | default('unspecified') }}
   loop: "{{ easyrsa_revoked }}"
   register: _result
   failed_when:
