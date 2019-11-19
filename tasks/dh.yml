@@ -1,0 +1,6 @@
+---
+
+- name: Generate Diffie-Hellman parameters
+  command: easyrsa gen-dh
+  args:
+    creates: "{{ easyrsa_pki_dir }}/dh.pem"

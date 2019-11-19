@@ -1,0 +1,7 @@
+---
+
+- name: Generate CSRs
+  command: easyrsa gen-req {{ item }} nopass
+  args:
+    creates: "{{ easyrsa_pki_dir }}/issued/{{ item }}.crt"
+  loop: "{{ easyrsa_servers + easyrsa_clients }}"

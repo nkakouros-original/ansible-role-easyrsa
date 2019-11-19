@@ -1,0 +1,25 @@
+---
+
+- name: Download easy-rsa
+  git:
+    repo: https://github.com/OpenVPN/easy-rsa
+    dest: /tmp/easy-rsa/
+    version: "{{ easyrsa_version }}"
+
+- name: Install library files
+  copy:
+    src: /tmp/easy-rsa/easyrsa3/
+    dest: /usr/lib/easyrsa
+    remote_src: true
+    owner: root
+    group: root
+
+- name: Install binary
+  copy:
+    content: |
+      #!/usr/bin/env bash
+      /usr/lib/easyrsa/easyrsa --vars=/usr/lib/easyrsa/vars "$@"
+    dest: /usr/bin/easyrsa
+    mode: 0o755
+    owner: root
+    group: root

@@ -1,0 +1,14 @@
+---
+
+- name: Revoke certificates
+  command: easyrsa revoke "{{ item.0 }}" "{{ item.1 | default('unspecified') }}"
+  loop: "{{ easyrsa_revoked }}"
+  register: _result
+  failed_when:
+    - _result is failed
+    - _result is not search('nexpected input in file')
+  changed_when: _result is not failed
+
+- name: Generate CRL
+  command: easyrsa gen-crl
+  when: _result is changed

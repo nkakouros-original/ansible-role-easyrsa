@@ -1,0 +1,27 @@
+---
+
+- name: Upload vars file
+  template:
+    src: vars.j2
+    dest: /usr/lib/easyrsa/vars
+    owner: root
+    group: root
+    mode: 0o755
+
+- name: Initiate PKI
+  command: easyrsa init-pki
+  args:
+    creates: "{{ easyrsa_pki_dir }}"
+  when: not easyrsa_replace_pki | bool
+
+- name: Initiate PKI
+  command: easyrsa init-pki
+  when: easyrsa_replace_pki | bool
+
+- name: Create CA
+  command: easyrsa build-ca nopass
+  register: _result
+  failed_when:
+    - _result is failed
+    - _result.stderr is not search('you already seem to have one set up')
+  changed_when: _result is not failed

@@ -1,0 +1,15 @@
+---
+
+- include_tasks: install.yml
+
+- include_tasks: configure.yml
+
+- include_tasks: csr.yml
+
+- include_tasks: sign.yml
+
+- include_tasks: renew.yml
+
+- include_tasks: revoke.yml
+
+- include_tasks: dh.yml

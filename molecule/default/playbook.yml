@@ -1,0 +1,15 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    easyrsa_pki_dir: /etc/easyrsa/pki
+    easyrsa_servers:
+      - server
+    easyrsa_clients:
+      - client1
+      - client2
+    easyrsa_renew: "{{ easyrsa_clients }}"
+    easyrsa_revoke: "{{ easyrsa_clients }}"
+    easyrsa_generate_dh: true
+  roles:
+    - role: nkakouros.easyrsa

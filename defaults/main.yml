@@ -1,0 +1,76 @@
+---
+
+easyrsa_enabled: true
+# Set to false to completely disable the role.
+
+# Installation {{{
+easyrsa_version: v3.0.6
+# The version of easy-rsa to install. This can be any branch name or tag from
+# the easy-rsa repo. See:
+# - https://github.com/OpenVPN/easy-rsa/tags
+# - https://github.com/OpenVPN/easy-rsa/branches
+
+easyrsa_pki_dir: /etc/easyrsa/pki
+# The folder on the host where certs, keys etc will be located.
+
+easyrsa_replace_pki: false
+# Set to true to delete any existing easy-rsa PKI on the host and create a new,
+# fresh one.
+# }}}
+# Configuration {{{
+# All variables in this section correspond to the EASYRSA_* variables defined in
+# the `vars` file that easyrsa uses. The documentation of these variables is
+# available in the `vars.j2` file that comes with the role.
+easyrsa_conf_dn: cn_only
+
+easyrsa_conf_req_country: US
+easyrsa_conf_req_cn: "ChangeMe"
+easyrsa_conf_req_province: "California"
+easyrsa_conf_req_city: "San Francisco"
+easyrsa_conf_req_org: "Copyleft Certificate Co"
+easyrsa_conf_req_email: "me@example.net"
+easyrsa_conf_req_ou: "My Organizational Unit"
+
+easyrsa_conf_key_size: 2048
+easyrsa_conf_algo: rsa
+easyrsa_conf_curve: secp384r1
+easyrsa_conf_digest: sha256
+
+easyrsa_conf_ca_expire: 3650
+easyrsa_conf_cert_expire: 1080
+easyrsa_conf_cert_renew: 30
+easyrsa_conf_crl_days: 180
+easyrsa_conf_rand_sn: "yes"
+easyrsa_conf_ns_support: "no"
+easyrsa_conf_ns_comment: "Easy-RSA Generated Certificate"
+
+easyrsa_conf_temp_file: "$EASYRSA_PKI/extensions.temp"
+easyrsa_conf_ext_dir: "$EASYRSA/x509-types"
+easyrsa_conf_ssl_conf: "$EASYRSA/openssl-easyrsa.cnf"
+# }}}
+# Certificates {{{
+easyrsa_servers:
+  - my-server
+# A list of server certificates to create. For instance:
+# easyrsa_servers:
+#   - my-server
+
+easyrsa_clients:
+  - my-client
+# A list of client certificates to create. For instance:
+# easyrsa_clients:
+#   - my-client
+
+easyrsa_renew: []
+# Existing certificates to renew.
+
+easyrsa_revoked: []
+# A list of revoked certificates. For instsace:
+# easyrsa_revoked:
+#   - name: my_old_client
+#     reason: superseded
+# }}}
+# Other {{{
+easyrsa_generate_dh: false
+# Set to true to generate Diffie-Hellman parameters.
+# }}}
