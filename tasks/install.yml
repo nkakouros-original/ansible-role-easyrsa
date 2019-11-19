@@ -1,5 +1,11 @@
 ---
 
+- name: Install dependencies
+  package:
+    name: "{{ item }}"
+  loop:
+    - openssl
+
 - name: Download easy-rsa
   git:
     repo: https://github.com/OpenVPN/easy-rsa
