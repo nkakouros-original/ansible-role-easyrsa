@@ -6,5 +6,5 @@
   register: _result
   failed_when:
     - _result is failed
-    - _result is search('Certificate expires in more than 30 days')
+    - _result is not search('Certificate expires in more than 30 days')
   changed_when: _result is not failed
