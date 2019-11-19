@@ -8,10 +8,10 @@
     easyrsa_clients:
       - client1
       - client2
-    easyrsa_renew:
-      - name: client
+    easyrsa_renew: "{{ easyrsa_clients }}"
+    easyrsa_revoked:
+      - name: client1
         reason: unspecified
-    easyrsa_revoked: "{{ easyrsa_clients }}"
     easyrsa_generate_dh: true
   roles:
     - role: nkakouros.easyrsa
