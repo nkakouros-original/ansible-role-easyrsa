@@ -16,4 +16,6 @@
       tags: easyrsa-revoke
   tags: easyrsa-revoke
 
+- include_tasks: convert.yml
+
 - include_tasks: dh.yml

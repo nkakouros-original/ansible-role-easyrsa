@@ -6,7 +6,7 @@
     # Generate certificates to revoke during Converge
     easyrsa_pki_dir: /etc/easyrsa/pki
     easyrsa_clients:
-      - old_client
+      - name: old_client
   roles:
     - role: nkakouros.easyrsa
   pre_tasks:

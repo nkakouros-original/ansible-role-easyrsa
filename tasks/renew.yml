@@ -1,7 +1,7 @@
 ---
 
 - name: Renew certificates
-  command: easyrsa renew "{{ item }}"
+  command: easyrsa renew "{{ item.name }}"
   loop: "{{ easyrsa_renew }}"
   register: _result
   failed_when:

@@ -1,7 +1,14 @@
 ---
 
 - name: Generate CSRs
-  command: easyrsa gen-req {{ item }} nopass
+  command: >-
+    easyrsa
+      {{ '--passout=env:EASYRSA_PASSOUT' if item.pass | default(None) else '' }}
+      gen-req
+      {{ item.name }}
+      {{ 'nopass' if not item.pass | default(None) else '' }}
+  environment:
+    EASYRSA_PASSOUT: "{{ item.pass | default('') }}"
   args:
-    creates: "{{ easyrsa_pki_dir }}/issued/{{ item }}.crt"
+    creates: "{{ easyrsa_pki_dir }}/issued/{{ item.name }}.crt"
   loop: "{{ easyrsa_servers + easyrsa_clients }}"

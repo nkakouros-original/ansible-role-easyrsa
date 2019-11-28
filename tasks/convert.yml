@@ -1,0 +1,36 @@
+---
+
+- name: Bundle certificates and keys into PKCS#12
+  command: >-
+    easyrsa --passin=env:EASYRSA_PASSOUT --passout=env:EASYRSA_PASSOUT
+      export-p12 {{ item.name }}
+  environment:
+    EASYRSA_PASSOUT: "{{ item.pass | default('') }}"
+  args:
+    creates: "{{ easyrsa_pki_dir }}/private/{{ item.name }}.p12"
+  # PKCS#12 needs an output password
+  when: item.pass | default(None)
+  loop: "{{ easyrsa_to_pkcs12 }}"
+
+- name: Convert private keys to PKCS#8
+  command: >-
+    openssl pkcs8 -topk8
+      -in '{{ easyrsa_pki_dir }}/private/{{ item.name }}.key'
+      -out '{{ easyrsa_pki_dir }}/private/{{ item.name }}.p8'
+      {{ '-passin env:EASYRSA_PASSOUT' if item.pass | default(None) else '' }}
+      {{ '-passout env:EASYRSA_PASSOUT' if item.pass | default(None) else
+        '-nocrypt' }}
+  environment:
+    EASYRSA_PASSOUT: "{{ item.pass | default('') }}"
+  args:
+    creates: "{{ easyrsa_pki_dir }}/private/{{ item.name }}.p8"
+  loop: "{{ easyrsa_to_pkcs8 }}"
+
+- name: Convert certificates to PKCS#7
+  command: >-
+    easyrsa export-p7 {{ item.name }}
+  environment:
+    EASYRSA_PASSOUT: "{{ item.pass | default('') }}"
+  args:
+    creates: "{{ easyrsa_pki_dir }}/issued/{{ item.name }}.p7b"
+  loop: "{{ easyrsa_to_pkcs7 }}"

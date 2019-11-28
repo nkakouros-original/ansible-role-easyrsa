@@ -4,7 +4,7 @@ easyrsa_enabled: true
 # Set to false to completely disable the role.
 
 # Installation {{{
-easyrsa_version: v3.0.6
+easyrsa_version: master
 # The version of easy-rsa to install. This can be any branch name or tag from
 # the easy-rsa repo. See:
 # - https://github.com/OpenVPN/easy-rsa/tags
@@ -50,16 +50,14 @@ easyrsa_conf_ssl_conf: "$EASYRSA/openssl-easyrsa.cnf"
 # }}}
 # Certificates {{{
 easyrsa_servers:
-  - my-server
-# A list of server certificates to create. For instance:
-# easyrsa_servers:
-#   - my-server
+  - name: my-server
+    pass: ~
+# A list of server certificates to create.
 
 easyrsa_clients:
-  - my-client
-# A list of client certificates to create. For instance:
-# easyrsa_clients:
-#   - my-client
+  - name: my-client
+    pass: ~
+# A list of client certificates to create.
 
 easyrsa_renew: []
 # Existing certificates to renew.
@@ -69,6 +67,21 @@ easyrsa_revoked: []
 # easyrsa_revoked:
 #   - name: my_old_client
 #     reason: superseded
+# }}}
+# Conversions {{{
+# These features require EasyRSA version > 3.0.6
+
+easyrsa_to_pkcs12: []
+# A list of certificate names to convert to the PKCS#12 format. Eg:
+# easyrsa_to_pkcs12: "{{ easyrsa_servers }}"
+
+easyrsa_to_pkcs8: []
+# A list of certificate names to convert to the PKCS#8 format. Eg:
+# easyrsa_to_pkcs8: "{{ easyrsa_servers }}"
+
+easyrsa_to_pkcs7: []
+# A list of certificate names to convert to the PKCS#7 format. Eg:
+# easyrsa_to_pkcs7: "{{ easyrsa_servers }}"
 # }}}
 # Other {{{
 easyrsa_generate_dh: false

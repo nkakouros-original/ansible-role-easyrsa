@@ -4,10 +4,11 @@
   vars:
     easyrsa_pki_dir: /etc/easyrsa/pki
     easyrsa_servers:
-      - server
+      - name: server
     easyrsa_clients:
-      - client1
-      - client2
+      - name: client1
+      - name: client2
+        pass: password
     easyrsa_renew: "{{ easyrsa_clients }}"
     easyrsa_revoked:
       - name: old_client
