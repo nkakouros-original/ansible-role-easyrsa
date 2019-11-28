@@ -13,6 +13,9 @@
     easyrsa_revoked:
       - name: old_client
         reason: unspecified
+    easyrsa_to_pkcs12: "{{ easyrsa_clients }}"
+    easyrsa_to_pkcs8: "{{ easyrsa_clients }}"
+    easyrsa_to_pkcs7: "{{ easyrsa_clients }}"
     easyrsa_generate_dh: true
   roles:
     - role: nkakouros.easyrsa
