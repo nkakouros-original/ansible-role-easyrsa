@@ -5,7 +5,8 @@
     path: "{{ easyrsa_download_dir }}"
     state: directory
   delegate_to: localhost
-  become: false
+  become: true
+  become_user: "{{ easyrsa_download_user }}"
 
 - name: Create pki zip
   archive:
@@ -26,7 +27,8 @@
     src: "{{ easyrsa_download_dir }}/pki.zip"
     dest: "{{ easyrsa_download_dir }}/"
   delegate_to: localhost
-  become: false
+  become: true
+  become_user: "{{ easyrsa_download_user }}"
   when:
     - easyrsa_download_pki | bool
     - easyrsa_download_pki_extract | bool
