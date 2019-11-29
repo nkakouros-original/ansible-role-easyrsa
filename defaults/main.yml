@@ -67,6 +67,20 @@ easyrsa_revoked: []
 # easyrsa_revoked:
 #   - name: my_old_client
 #     reason: superseded
+
+easyrsa_download: "{{ easyrsa_clients }}"
+# A list of certificates (and keys) to download.
+
+easyrsa_download_pki: false
+# Set to true to download the whole pki folder as a zip folder to the Ansible
+# controller. Perhaps you want to set `easyrsa_download` to an empty list to not
+# download certificates/keys twice.
+
+easyrsa_download_pki_extract: true
+# Set to true to extract the downloaded pki.
+
+easyrsa_download_dir: ''
+# Where to download the certificates/keys to the Ansible controller.
 # }}}
 # Conversions {{{
 # These features require EasyRSA version > 3.0.6

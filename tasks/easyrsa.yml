@@ -18,4 +18,6 @@
 
 - include_tasks: convert.yml
 
+- include_tasks: download.yml
+
 - include_tasks: dh.yml

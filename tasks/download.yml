@@ -1,0 +1,46 @@
+---
+
+- name: Create download dir
+  file:
+    path: "{{ easyrsa_download_dir }}"
+    state: directory
+  delegate_to: localhost
+  become: false
+
+- name: Create pki zip
+  archive:
+    path: "{{ easyrsa_pki_dir }}"
+    dest: "{{ easyrsa_pki_dir }}.zip"
+    format: zip
+
+- name: Download pki zip
+  fetch:
+    src: "{{ easyrsa_pki_dir }}.zip"
+    dest: "{{ easyrsa_download_dir }}"
+    flat: true
+    owner: "{{ lookup('env', 'USER') }}"
+  when: easyrsa_download_pki | bool
+
+- name: Extract pki zip
+  unarchive:
+    src: "{{ easyrsa_download_dir }}/pki.zip"
+    dest: "{{ easyrsa_download_dir }}/"
+  delegate_to: localhost
+  become: false
+  when:
+    - easyrsa_download_pki | bool
+    - easyrsa_download_pki_extract | bool
+
+- name: Download certificates
+  fetch:
+    src: "{{ easyrsa_pki_dir }}/issued/{{ item.name }}.crt"
+    dest: "{{ easyrsa_download_dir }}/"
+    flat: true
+  loop: "{{ easyrsa_download }}"
+
+- name: Download keys
+  fetch:
+    src: "{{ easyrsa_pki_dir }}/private/{{ item.name }}.key"
+    dest: "{{ easyrsa_download_dir }}/"
+    flat: true
+  loop: "{{ easyrsa_download }}"
