@@ -96,6 +96,10 @@ easyrsa_to_pkcs8: []
 easyrsa_to_pkcs7: []
 # A list of certificate names to convert to the PKCS#7 format. Eg:
 # easyrsa_to_pkcs7: "{{ easyrsa_servers }}"
+
+easyrsa_to_pkcs1: []
+# A list of certificate names to convert to the PKCS#1 (RSA) format. Eg:
+# easyrsa_to_pkcs1: "{{ easyrsa_servers }}"
 # }}}
 # Other {{{
 easyrsa_generate_dh: false
