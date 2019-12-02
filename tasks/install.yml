@@ -17,8 +17,16 @@
     src: /tmp/easy-rsa/easyrsa3/
     dest: /usr/lib/easyrsa
     remote_src: true
+    mode: 0o755
     owner: root
     group: root
+
+- name: Set permissions
+  file:
+    path: /usr/lib/easyrsa/
+    state: directory
+    recurse: true
+    mode: o+rX
 
 - name: Install binary
   copy:

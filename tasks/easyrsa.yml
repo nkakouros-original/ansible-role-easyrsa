@@ -1,6 +1,9 @@
 ---
 
-- include_tasks: install.yml
+- include_tasks:
+    file: install.yml
+    apply:
+      become: true
 
 - include_tasks: configure.yml
 
