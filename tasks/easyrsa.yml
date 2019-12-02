@@ -21,6 +21,10 @@
 
 - include_tasks: convert.yml
 
-- include_tasks: download.yml
-
 - include_tasks: dh.yml
+  when: easyrsa_generate_dh | bool
+
+- include_tasks: download.yml
+  when:
+    - easyrsa_download | length
+      or easyrsa_download_pki | bool
