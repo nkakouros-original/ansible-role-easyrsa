@@ -10,4 +10,9 @@
   args:
     creates: "{{ easyrsa_pki_dir }}/issued/{{ item.name }}.crt"
   loop: "{{ easyrsa_servers + easyrsa_clients }}"
-  no_log: true
+  no_log: >-
+    {{
+      lookup('env', 'IN_MOLECULE')
+      | default(false, true)
+      | ternary(false, true)
+    }}

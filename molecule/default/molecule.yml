@@ -21,6 +21,10 @@ provisioner:
   name: ansible
   lint:
     name: ansible-lint
+  options:
+    vvv: true
+  env:
+    IN_MOLECULE: 'true'
 verifier:
   name: testinfra
   lint:
