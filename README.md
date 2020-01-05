@@ -21,6 +21,9 @@ Role Variables
 See [defaults/main.yml](defaults/main.yml) for a full list of variables together
 with documentation on how to use them to configure this role.
 
+For more info on the different key formats that easyrsa can generate, take
+a look at [key-formats.md](key-formats.md).
+
 Example Playbook
 ----------------
 
