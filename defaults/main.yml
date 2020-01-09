@@ -90,7 +90,9 @@ easyrsa_download_user: "{{ lookup('env', 'USER') }}"
 # These features require EasyRSA version > 3.0.6
 
 easyrsa_to_pkcs12: []
-# A list of certificate names to convert to the PKCS#12 format. Eg:
+# A list of certificate names to convert to the PKCS#12 format. If you do not
+# a specify a passphrase for a key in this list, , no pkcs12 file will be
+# generated as PKCS#12 requires a passphrase. Eg:
 # easyrsa_to_pkcs12: "{{ easyrsa_servers }}"
 
 easyrsa_to_pkcs8: []
