@@ -48,7 +48,7 @@
       -out '{{ easyrsa_pki_dir }}/private/{{ item.name }}.p1'
       {{ '-passin pass:' + item.pass if item.pass | default(None) else '' }}
       {{ '-aes256 -passout pass:' + item.pass if item.pass | default(None) else
-         '-nocrypt' }}
+         '' }}
   args:
     creates: "{{ easyrsa_pki_dir }}/private/{{ item.name }}.p1"
   loop: "{{ easyrsa_to_pkcs1 }}"
