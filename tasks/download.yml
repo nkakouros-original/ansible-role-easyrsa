@@ -24,7 +24,7 @@
 
 - name: Extract pki zip
   unarchive:
-    src: "{{ easyrsa_download_dir }}/pki.zip"
+    src: "{{ easyrsa_download_dir }}/{{ easyrsa_pki_dir | basename }}.zip"
     dest: "{{ easyrsa_download_dir }}/"
   delegate_to: localhost
   become: true
