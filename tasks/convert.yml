@@ -7,7 +7,7 @@
   args:
     creates: "{{ easyrsa_pki_dir }}/private/{{ item.name }}.p12"
   # PKCS#12 needs an output password
-  when: item.pass | default(None)
+  when: item['pass'] | default(None)
   loop: "{{ easyrsa_to_pkcs12 }}"
   no_log: >-
     {{
