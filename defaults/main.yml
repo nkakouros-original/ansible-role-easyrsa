@@ -24,12 +24,15 @@ easyrsa_replace_pki: false
 easyrsa_conf_dn: cn_only
 
 easyrsa_conf_req_country: US
-easyrsa_conf_req_cn: "ChangeMe"
 easyrsa_conf_req_province: "California"
 easyrsa_conf_req_city: "San Francisco"
 easyrsa_conf_req_org: "Copyleft Certificate Co"
 easyrsa_conf_req_email: "me@example.net"
 easyrsa_conf_req_ou: "My Organizational Unit"
+
+# This is used when building the CA. The role manually sets the CN for each
+# server and client certificate, this disregarding this default value.
+easyrsa_conf_req_cn: "ChangeMe"
 
 easyrsa_conf_key_size: 2048
 easyrsa_conf_algo: rsa
@@ -52,12 +55,16 @@ easyrsa_conf_ssl_conf: "$EASYRSA/openssl-easyrsa.cnf"
 easyrsa_servers:
   - name: my-server
     pass: ~
-# A list of server certificates to create.
+    cn: ~
+# A list of server certificates to create. If `cn` (the common name) is left
+# empty or None, the `name` will be used as the common name.
 
 easyrsa_clients:
   - name: my-client
     pass: ~
-# A list of client certificates to create.
+    cn: ~
+# A list of client certificates to create. If `cn` (the common name) is left
+# empty or None, the `name` will be used as the common name.
 
 easyrsa_renew: []
 # Existing certificates to renew.

@@ -9,6 +9,8 @@
       {{ 'nopass' if not item.pass | default(None) else '' }}
   args:
     creates: "{{ easyrsa_pki_dir }}/issued/{{ item.name }}.crt"
+  environment:
+    EASYRSA_REQ_CN: "{{ item.cn | d(item.name, true) }}"
   loop: "{{ easyrsa_servers + easyrsa_clients }}"
   no_log: >-
     {{
