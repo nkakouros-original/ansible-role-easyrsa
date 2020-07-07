@@ -5,6 +5,7 @@
     name: "{{ item }}"
   loop:
     - openssl
+    - git
 
 - name: Download easy-rsa
   git:
