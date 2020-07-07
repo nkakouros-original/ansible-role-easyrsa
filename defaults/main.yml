@@ -77,7 +77,7 @@ easyrsa_revoked: []
 # }}}
 # Download {{{
 easyrsa_download: "{{ easyrsa_clients }}"
-# A list of certificates (and keys) to download.
+# A list of specific certificates (and keys) to download.
 
 easyrsa_download_pki: false
 # Set to true to download the whole pki folder as a zip folder to the Ansible
