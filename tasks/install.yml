@@ -16,7 +16,7 @@
 - name: Install library files
   copy:
     src: /tmp/easy-rsa/easyrsa3/
-    dest: /usr/lib/easyrsa
+    dest: /usr/local/lib/easyrsa
     remote_src: true
     mode: 0o755
     owner: root
@@ -24,7 +24,7 @@
 
 - name: Set permissions
   file:
-    path: /usr/lib/easyrsa/
+    path: /usr/local/lib/easyrsa/
     state: directory
     recurse: true
     mode: o+rX
@@ -33,8 +33,8 @@
   copy:
     content: |
       #!/usr/bin/env bash
-      /usr/lib/easyrsa/easyrsa --vars=/usr/lib/easyrsa/vars "$@"
-    dest: /usr/bin/easyrsa
+      /usr/local/lib/easyrsa/easyrsa --vars=/usr/local/lib/easyrsa/vars "$@"
+    dest: /usr/local/bin/easyrsa
     mode: 0o755
     owner: root
     group: root
