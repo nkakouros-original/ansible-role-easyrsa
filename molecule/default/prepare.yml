@@ -11,5 +11,4 @@
     - role: nkakouros.easyrsa
   pre_tasks:
     - name: Install git
-      package:
-        name: git
+      apt: name=git update_cache=yes
