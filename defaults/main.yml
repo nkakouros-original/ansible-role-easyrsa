@@ -79,7 +79,7 @@ easyrsa_revoked: []
 easyrsa_download: "{{ easyrsa_clients }}"
 # A list of specific certificates (and keys) to download.
 
-easyrsa_crl_handler: []
+easyrsa_crl_handlers: []
 # A list of handlers to run after a new CRL has been generated.
 
 easyrsa_download_pki: false
