@@ -13,3 +13,4 @@
 - name: Generate CRL
   command: easyrsa gen-crl
   when: _result is changed
+  notify: "{{ easyrsa_crl_handler }}"
