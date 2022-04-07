@@ -3,7 +3,7 @@
 - name: Upload vars file
   template:
     src: vars.j2
-    dest: /usr/lib/easyrsa/vars
+    dest: /usr/local/lib/easyrsa/vars
     owner: root
     group: root
     mode: 0o755
