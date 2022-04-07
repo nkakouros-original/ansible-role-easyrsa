@@ -1,57 +1,51 @@
-# This is a basic workflow to help you get started with Actions
+---
 
 name: CI
 
-# Controls when the workflow will run
-on:
-  # Triggers the workflow on push or pull request events but only for the master branch
+on:  # yamllint disable-line rule:truthy
   push:
     branches:
       - master
+      - fixes
   pull_request:
     branches:
       - master
+      - fixes
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch: !
+  workflow_dispatch: ~
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         distro:
-          # - image: jrei/systemd-ubuntu:16.04
-          #  instance: systemd-ubuntu-16.04
-          - image: jrei/systemd-ubuntu:18.04
-            instance: systemd-ubuntu-18.04
-            # - image: jrei/systemd-ubuntu:20.04
-            #  instance: systemd-ubuntu-20.04
-            # - image: jrei/systemd-centos:7
-            #   instance: systemd-centos-7
-            # - image: jrei/systemd-centos:8
-            #   instance: systemd-centos-8
-            # - image: jrei/systemd-debian:9
-            #   instance: systemd-debian-9
-            # - image: jrei/systemd-debian:10
-            #   instance: systemd-debian-10
-    # Steps represent a sequence of tasks that will be executed as part of the job
+          - distro: ubuntu
+            version: 1804
+
+    env:
+      # IMAGE: jrei/systemd-${{ matrix.distro.distro }}:${{ matrix.distro.version }}
+      # IMAGE: geerlingguy-${{ matrix.distro.distro }}${{ matrix.distro.version }}-ansible
+      # INSTANCE: ${{ matrix.distro.distro }}-${{ matrix.distro.version }}
+      IMAGE: geerlingguy-ubuntu1804-ansible
+      INSTANCE: ubuntu1804
+      DRIVER: docker
+
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
       - name: Setup Python
         uses: actions/setup-python@v2.2.1
 
+      # - name: Install ansible
+        # run: pip install -U ansible
+
       - name: Install molecule
-        run: pip3 install molecule molecule-docker ansible ansible-lint docker
+        run: pip3 install ansible-lint molecule molecule-${{ env.DRIVER }} ${{ env.DRIVER }}
 
       - name: Run molecule
         run: molecule test
         env:
-          MOLECULE_DISTRO: ${{ matrix.distro.image }}
-          MOLECULE_INSTANCE_NAME: ${{ matrix.distro.instance }}
+          MOLECULE_DOCKER_IMAGE: ${{ env.IMAGE }}
+          MOLECULE_INSTANCE_NAME: ${{ env.INSTANCE }}

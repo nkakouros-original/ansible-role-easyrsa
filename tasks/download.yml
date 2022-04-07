@@ -3,6 +3,7 @@
 - name: Create download dir
   file:
     path: "{{ easyrsa_download_dir }}"
+    mode: 0o755
     state: directory
   delegate_to: localhost
   become: true
@@ -12,6 +13,7 @@
   archive:
     path: "{{ easyrsa_pki_dir }}"
     dest: "{{ easyrsa_pki_dir }}.zip"
+    mode: 0o644
     format: zip
 
 - name: Download pki zip

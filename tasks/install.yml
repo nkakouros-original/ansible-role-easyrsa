@@ -1,8 +1,9 @@
 ---
 
-- name: Install dependencies
-  package:
+- name: Install dependencies (Debian)
+  apt:
     name: "{{ item }}"
+    update_cache: true
   loop:
     - openssl
     - git

@@ -4,15 +4,13 @@ dependency:
   name: galaxy
 driver:
   name: docker
-lint:
-  name: yamllint
-  options:
-    config-file: molecule/default/yamllint.yml
-
+lint: |
+  set -e
+  yamllint --config-file molecule/default/yamllint.yml .
+  ansible-lint -c molecule/default/ansible-lint.yml .
 platforms:
-  - name: instance
-    image: "geerlingguy/docker-ubuntu1804-ansible:latest"
-    command: ${MOLECULE_INIT_CMD-""}
+  - name: ${MOLECULE_INSTANCE_NAME}
+    image: ${MOLECULE_DOCKER_IMAGE}
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     privileged: true
@@ -23,9 +21,5 @@ provisioner:
     name: ansible-lint
   options:
     vvv: true
-  env:
-    IN_MOLECULE: 'true'
 verifier:
-  name: testinfra
-  lint:
-    name: flake8
+  name: ansible

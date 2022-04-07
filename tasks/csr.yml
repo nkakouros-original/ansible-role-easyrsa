@@ -12,9 +12,4 @@
   environment:
     EASYRSA_REQ_CN: "{{ item.cn | d(item.name, true) }}"
   loop: "{{ easyrsa_servers + easyrsa_clients }}"
-  no_log: >-
-    {{
-      lookup('env', 'IN_MOLECULE')
-      | default(false, true)
-      | ternary(false, true)
-    }}
+  no_log: "{{ lookup('ansible.builtin.env', 'MOLECULE_FILE') is falsy }}"
