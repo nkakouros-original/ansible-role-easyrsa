@@ -23,5 +23,7 @@ easyrsa_download_pki_extract: false
 easyrsa_download_dir_alt: '/tmp/alternative'  # on purpose without a trailing slash
 
 easyrsa_download_dir_alt2: '/tmp/alternative2'
-easyrsa_download_user_alt: nobody
-easyrsa_download_group_alt: root
+easyrsa_download_user_alt2: nobody
+easyrsa_download_group_alt2: root
+
+easyrsa_download_dir_alt3: '/tmp/alternative3/'

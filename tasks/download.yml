@@ -5,12 +5,12 @@
   # folder will result in different expected permissions and I don't want to
   # mess them up by forcing them to e.g. 0o755
   file:
-    path: "{{ easyrsa_download_dir }}/pki"
+    path: "{{ easyrsa_download_dir }}"
     state: directory
   delegate_to: localhost
   # Not using `become` or `owner` for the same reason as above. For example, if
   # `/tmp` is the `path`, I don't want to change the owner to the download user.
-  when: easyrsa_download_pki | bool or easyrsa_download | lenght > 0
+  when: easyrsa_download_pki | bool or easyrsa_download | length > 0
 
 - name: Download whole pki
   block:
@@ -28,16 +28,26 @@
         dest: "{{ easyrsa_download_dir }}/"
         flat: true
 
-    - name: Extract pki zip
-      unarchive:
-        src: "{{ easyrsa_download_dir }}/{{ easyrsa_pki_dir | basename }}.zip"
-        dest: "{{ easyrsa_download_dir }}/pki/"
-        # Using a glob in `archive` and adding the `pki` part of the path here
-        # manually in order to have  `unarchive` change the owner of just that
-        # `pki` folder and not of `easyrsa_download_dir` as that would create
-        # permission and idempotence issues for `fetch` above.
-        owner: "{{ easyrsa_download_user }}"
-        group: "{{ easyrsa_download_group }}"
+    - name: Extract zip file
+      block:
+        - name: Create extraction folder
+          file:
+            path: "{{ easyrsa_download_dir }}/{{ easyrsa_pki_dir | basename }}"
+            state: directory
+            owner: "{{ easyrsa_download_user }}"
+            group: "{{ easyrsa_download_group }}"
+            mode: 0o755
+
+        - name: Extract pki zip
+          unarchive:
+            src: "{{ easyrsa_download_dir }}/{{ easyrsa_pki_dir | basename }}.zip"
+            dest: "{{ easyrsa_download_dir }}/pki/"
+            # Using a glob in `archive` and adding the `pki` part of the path here
+            # manually in order to have  `unarchive` change the owner of just that
+            # `pki` folder and not of `easyrsa_download_dir` as that would create
+            # permission and idempotence issues for `fetch` above.
+            owner: "{{ easyrsa_download_user }}"
+            group: "{{ easyrsa_download_group }}"
       delegate_to: localhost
       become: "{{ easyrsa_download_user != ansible_user_id }}"
       when: easyrsa_download_pki_extract | bool

@@ -66,7 +66,7 @@ set_var EASYRSA /usr/local/lib/easyrsa
 
 # Define directory for temporary subdirectories.
 
-set_var EASYRSA_TEMP_DIR "$EASYRSA_PKI"
+set_var EASYRSA_TEMP_DIR "{{ easyrsa_conf_temp_dir }}"
 
 # Define X509 DN mode.
 # This is used to adjust what elements are included in the Subject field as the DN

@@ -39,6 +39,9 @@ arguments_specs:
     # All variables in this section correspond to the EASYRSA_* variables
     # defined in the `vars` file that easyrsa uses. The documentation of these
     # variables is available in the `vars.j2` file that comes with the role.
+    easyrsa_conf_temp_dir:
+      type: str
+      default: '.'
     easyrsa_conf_dn:
       type: str
       default: "cn_only"
@@ -105,7 +108,7 @@ arguments_specs:
 
     easyrsa_conf_temp_file:
       type: str
-      default: "$EASYRSA_PKI/extensions.temp"
+      default: "$EASYRSA_TEMP_DIR/extensions.temp"
     easyrsa_conf_ext_dir:
       type: str
       default: "$EASYRSA/x509-types"

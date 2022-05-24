@@ -7,7 +7,7 @@
 
 - include_tasks: configure.yml
 
-- block:
+- block:  # noqa unnamed-task
     - include_tasks: csr.yml
     - include_tasks: sign.yml
     - include_tasks: renew.yml

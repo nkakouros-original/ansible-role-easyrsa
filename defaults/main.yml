@@ -7,6 +7,7 @@ easyrsa_repo: 'https://github.com/OpenVPN/easy-rsa'
 easyrsa_version: master
 easyrsa_pki_dir: /etc/easyrsa/pki
 easyrsa_replace_pki: false
+easyrsa_conf_temp_dir: '.'
 easyrsa_conf_dn: "cn_only"
 easyrsa_conf_req_country: "US"
 easyrsa_conf_req_province: "California"
@@ -26,7 +27,7 @@ easyrsa_conf_crl_days: 180
 easyrsa_conf_rand_sn: "yes"
 easyrsa_conf_ns_support: "no"
 easyrsa_conf_ns_comment: "Easy-RSA Generated Certificate"
-easyrsa_conf_temp_file: "$EASYRSA_PKI/extensions.temp"
+easyrsa_conf_temp_file: "$EASYRSA_TEMP_DIR/extensions.temp"
 easyrsa_conf_ext_dir: "$EASYRSA/x509-types"
 easyrsa_conf_ssl_conf: "$EASYRSA/openssl-easyrsa.cnf"
 easyrsa_servers: []

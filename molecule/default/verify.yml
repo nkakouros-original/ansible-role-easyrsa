@@ -106,7 +106,7 @@
               value="$*"
               eval "export $var=\"\${$var-$value}\""
             } # copied from easyrsa script
-            EASYRSA_CALLER=1 && source /usr/local/lib/easyrsa/vars
+            EASYRSA_CALLER=1 && source {{ easyrsa_pki_dir }}/vars
             compgen -A variable EASYRSA_
           args:
             executable: /bin/bash
@@ -115,57 +115,44 @@
 
         - name: Parse shell output
           set_fact:
-            _easyrsa_config_vars: "{{ _result.stdout_lines | difference(unrelated_vars) }}"
+            _easyrsa_installed_vars: "{{ _result.stdout_lines | difference(unrelated_vars) }}"
           vars:
             unrelated_vars:
               - EASYRSA_CALLER
               - EASYRSA_BATCH
-              - EASYRSA_TEMP_DIR
 
         - name: Get role variables related to the easyrsa vars file
           set_fact:
-            _easyrsa_role_vars: "{{ q('varnames', 'easyrsa_conf_.+')
-                                    | union(other_vars)
-                                 }}"
+            _easyrsa_role_vars: "{{ q('varnames', 'easyrsa_conf_.+') }}"
             _easyrsa_role_vars_uppercase: "{{ q('varnames', 'easyrsa_conf_.+')
-                                              | union(other_vars)
                                               | map('replace', '_conf', '', count=1)
                                               | map('upper')
                                            }}"
-          vars:
-            other_vars:
-              - easyrsa_pki_dir
 
         - name: Check coverage of EASYRSA_ vars in role
           assert:
             that:
               - _easyrsa_role_vars_uppercase
-                | symmetric_difference(_easyrsa_config_vars)
-                | symmetric_difference(_variations_of_pki_dir_var_name)
+                | symmetric_difference(_easyrsa_installed_vars)
                 | length == 0
             fail_msg: |
               Role vars: {{ _easyrsa_role_vars | length }}
-              EASYRSA_ vars: {{ _easyrsa_config_vars | length }}
+              EASYRSA_ vars: {{ _easyrsa_installed_vars | length }}
               Role vars not present in EASYRSA_:
-                {{ _easyrsa_role_vars | difference(_easyrsa_config_vars) }}
+                {{ _easyrsa_role_vars_uppercase | difference(_easyrsa_installed_vars) | sort }}
               EASYRSA_ vars not present in role:
-                {{ _easyrsa_config_vars | difference(_easyrsa_role_vars) }}
-          vars:
-            _variations_of_pki_dir_var_name:
-              - EASYRSA_PKI  # the setting name in easyrsa
-              - EASYRSA_PKI_DIR  # the setting name in the role (after `replace/upper`)
+                {{ _easyrsa_installed_vars | difference(_easyrsa_role_vars_uppercase) | sort }}
 
         - name: Read vars file content
           slurp:
-            src: /usr/local/lib/easyrsa/vars
+            src: "{{ easyrsa_pki_dir }}/vars"
           register: _result
 
         - name: Decode slurped file
           set_fact:
             _easyrsa_vars_file: "{{ (_result.content | b64decode).split('\n')}}"
 
-
-        - name: Check value of role variables is respected (except easyrsa_pki_dir)
+        - name: Check value of role variables is respected in vars file
           assert:
             that:
               - _easyrsa_vars_file is search(line_regex)
@@ -176,18 +163,9 @@
                 'set_var %s \"?%s\"?'
                 | format(_easyrsa__conf_var.1, lookup('vars', _easyrsa__conf_var.0) | regex_escape)
               }}
-          when: _easyrsa__conf_var.0 != 'easyrsa_pki_dir'
           loop: "{{ _easyrsa_role_vars | zip(_easyrsa_role_vars_uppercase) | list }}"
           loop_control:
             loop_var: _easyrsa__conf_var
-
-        - name: Check value of easyrsa_pki_dir
-          assert:
-            that:
-              - _easyrsa_vars_file is contains(line)
-            fail_msg: "following line not found in vars file:\n{{ line }}"
-          vars:
-            line: "set_var EASYRSA_PKI \"{{ easyrsa_pki_dir }}\""
 
     - name: Check vars file is read and enforced by easyrsa
       # By checking a sample of the settings
@@ -211,7 +189,7 @@
         - name: Check certificate properties
           assert:
             that:
-              - _result.issuer.commonName == 'Molecule CA'
+              - _result.issuer.commonName == easyrsa_conf_req_cn
 
     - name: Check Diffie-Hellman generated file
       command: openssl dhparam -in "{{ easyrsa_pki_dir }}/dh.pem" --noout --text
@@ -221,49 +199,65 @@
 
     - name: Check download options
       block:
-        - name: Check individual certs/keys are downloaded
-          assert:
-            that:
-              - '[easyrsa_download_dir, _easyrsa__cert.0.name + _easyrsa__cert.1]
-                 | path_join is file'
-          loop: "{{ lookup('community.general.cartesian', easyrsa_download, ['.crt', '.key']) }}"
-          loop_control:
-            loop_var: _easyrsa__cert
-
-        - name: Check whole pki is downloaded
-          assert:
-            that:
-              - _easyrsa__path is file
-            fail_msg: "path: {{ _easyrsa__path }}"
-          loop:
-            - "{{ [easyrsa_download_dir_alt2, easyrsa_pki_dir | basename + '.zip'] | path_join }}"
-            # - "{{ [easyrsa_download_dir_alt2, easyrsa_pki_dir | basename,
-            #       'issued', easyrsa_to_pkcs7.0.name + '.p7b'] | path_join }}"
-            #       checking one random file from the pki folder
-            #       disabled currently due to:
-            #       https://github.com/ansible/ansible/issues/77831
-          loop_control:
-            loop_var: _easyrsa__path
-          become: true
-          become_user: root
-
-        - name: Check download options are respected
+        - name: Check case 1
           block:
-            - name: Check options
+            - name: Check individual certs/keys are downloaded (case 1)
+              assert:
+                that:
+                  - '[easyrsa_download_dir, _easyrsa__cert.0.name + _easyrsa__cert.1]
+                     | path_join is file'
+              loop:
+                "{{ lookup('community.general.cartesian', easyrsa_download, ['.crt', '.key']) }}"
+              loop_control:
+                loop_var: _easyrsa__cert
+
+            - name: Check other files/dirs (case 1)
               assert:
                 that:
                   - easyrsa_download_dir is directory
-                  - lookup('fileglob', easyrsa_download_dir + easyrsa_pki_dir | basename + '*')
-                    | length > 10
-                  # if the pki was extracted fine, the pki folder should
-                  # contain more than 10 items, such as the `issued`,
-                  # `private`, etc folders and the CA and index related
-                  # files.`
+                  - '[easyrsa_download_dir, easyrsa_pki_dir | basename + ".zip"]
+                     | path_join is file'
                   - '[easyrsa_download_dir, easyrsa_pki_dir | basename]
                      | path_join is not exists'
 
-                  - easyrsa_download_dir_alt is not directory
+        - name: Check case 2
+          block:
+            - name: Check no individual certs/keys are downloaded (case 2)
+              assert:
+                that:
+                  - lookup('fileglob', easyrsa_download_dir_alt2 + '/*.' + _easyrsa__extension)
+                    | length ==0
+              loop:
+                - crt
+                - key
+              loop_control:
+                loop_var: _easyrsa__extension
 
+            - name: Check nothing else was downloaded (case 2)
+              assert:
+                that:
+                  - easyrsa_download_dir_alt is not exists
+                  - '[easyrsa_download_dir_alt, easyrsa_pki_dir | basename + ".zip"]
+                     | path_join is not exists'
+                  - '[easyrsa_download_dir_alt, easyrsa_pki_dir | basename]
+                     | path_join is not exists'
+
+        - name: Check case 3
+          block:
+            - name: Check no individual certs/keys are downloaded (case 3)
+              assert:
+                that:
+                  - lookup('fileglob', easyrsa_download_dir_alt2 + '/*.' + _easyrsa__extension)
+                    | length ==0
+              loop:
+                - crt
+                - key
+              loop_control:
+                loop_var: _easyrsa__extension
+
+            - name: Check other files/dirs (case 3)
+              assert:
+                that:
                   - easyrsa_download_dir_alt2 is directory
                   - '[easyrsa_download_dir_alt2, easyrsa_pki_dir | basename + ".zip"]
                      | path_join is file'
@@ -274,8 +268,14 @@
                   # Checking just one directory inside the download folder
                   # that it is indeed a directory as a weak way of testing we
                   # extracted what we were supposed to extract.
+                  - lookup('fileglob', [easyrsa_download_dir_alt2, easyrsa_pki_dir | basename, '*']
+                      | path_join) | length > 10
+                  # If the pki was extracted fine, the pki folder should
+                  # contain more than 10 items, such as the `issued`,
+                  # `private`, etc folders and the CA and index related
+                  # files.`
 
-            - name: Check download user
+            - name: Check download user (case 3)
               assert:
                 that:
                   - owner == id
@@ -284,13 +284,51 @@
                   id: {{ id }}
               vars:
                 owner: "{{ lookup('pipe', 'stat -c \"%u\" ' + _easyrsa__path) }}"
-                id: "{{ lookup('pipe', 'id --user ' + easyrsa_download_user_alt) }}"
+                id: "{{ lookup('pipe', 'id --user ' + easyrsa_download_user_alt2) }}"
               loop:
                 - "{{ [easyrsa_download_dir_alt2, easyrsa_pki_dir | basename] | path_join }}"
                 - "{{ [easyrsa_download_dir_alt2, easyrsa_pki_dir | basename, 'issued']
                       | path_join }}"
               loop_control:
                 loop_var: _easyrsa__path
+
+            - name: Check download group (case 3)
+              assert:
+                that:
+                  - group == gid
+                fail_msg: |
+                  file group: {{ group }}
+                  gid: {{ gid }}
+              vars:
+                group: "{{ lookup('pipe', 'stat -c \"%g\" ' + _easyrsa__path) }}"
+                gid: "{{ lookup('pipe', 'id --group ' + easyrsa_download_group_alt2) }}"
+              loop:
+                - "{{ [easyrsa_download_dir_alt2, easyrsa_pki_dir | basename] | path_join }}"
+                - "{{ [easyrsa_download_dir_alt2, easyrsa_pki_dir | basename, 'issued']
+                      | path_join }}"
+              loop_control:
+                loop_var: _easyrsa__path
+
+        - name: Check case 4
+          block:
+            - name: Check individual certs/keys are downloaded (case 4)
+              assert:
+                that:
+                  - '[easyrsa_download_dir_alt3, _easyrsa__cert.0.name + _easyrsa__cert.1]
+                     | path_join is file'
+              loop:
+                "{{ lookup('community.general.cartesian', easyrsa_download, ['.crt', '.key']) }}"
+              loop_control:
+                loop_var: _easyrsa__cert
+
+            - name: Check nothing else was downloaded (case 4)
+              assert:
+                that:
+                  - easyrsa_download_dir_alt3 is directory
+                  - '[easyrsa_download_dir_alt3, easyrsa_pki_dir | basename + ".zip"]
+                     | path_join is not exists'
+                  - '[easyrsa_download_dir_alt3, easyrsa_pki_dir | basename]
+                     | path_join is not exists'
 
     - assert:
         that: |
@@ -299,6 +337,8 @@
           easyrsa_renew: []
           easyrsa_revoked: []
           easyrsa_crl_handlers: []
+
+          easyrsa_pki_dir not ending in pki
 
           create ca changed_when
           csr
