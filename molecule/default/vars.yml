@@ -1,0 +1,27 @@
+---
+
+easyrsa_pki_dir: /etc/easyrsa/pki
+easyrsa_conf_req_cn: "Molecule CA"
+# easyrsa_repo: https://github.com/nkakouros/easy-rsa
+# easyrsa_version: fix
+easyrsa_servers:
+  - name: server
+easyrsa_clients:
+  - name: client1
+  - name: client2
+    pass: password
+easyrsa_renew: "{{ easyrsa_clients }}"
+easyrsa_to_pkcs12: "{{ easyrsa_clients }}"
+easyrsa_to_pkcs8: "{{ easyrsa_clients }}"
+easyrsa_to_pkcs7: "{{ easyrsa_clients }}"
+easyrsa_to_pkcs1: "{{ easyrsa_clients }}"
+easyrsa_generate_dh: true
+easyrsa_download: "{{ easyrsa_clients }}"
+easyrsa_download_pki: true
+easyrsa_download_pki_extract: false
+
+easyrsa_download_dir_alt: '/tmp/alternative'  # on purpose without a trailing slash
+
+easyrsa_download_dir_alt2: '/tmp/alternative2'
+easyrsa_download_user_alt: nobody
+easyrsa_download_group_alt: root

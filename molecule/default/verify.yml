@@ -1,0 +1,315 @@
+---
+
+- name: Verify
+  hosts: all
+  become: true
+  vars_files:
+    - ../../defaults/main.yml
+    - vars.yml
+  tasks:
+    - name: Check tests are not sabotaged
+      assert:
+        that:
+          - easyrsa_clients | length > 0
+          - easyrsa_servers | length > 0
+          - easyrsa_to_pkcs12 | length > 0
+          - easyrsa_to_pkcs12 | selectattr('pass', 'defined') | length > 0
+          - easyrsa_to_pkcs12 | rejectattr('pass', 'defined') | length > 0
+          - easyrsa_to_pkcs8 | length > 0
+          - easyrsa_to_pkcs7 | length > 0
+          - easyrsa_to_pkcs1 | length > 0
+          - easyrsa_download | length > 0
+
+    - name: Check all certs/keys are generated
+      block:
+        - name: Check all certificates are generated
+          community.crypto.x509_certificate_info:
+            path: "{{ easyrsa_pki_dir }}/issued/{{ _easyrsa__cert.name }}.crt"
+          register: _result
+          failed_when: _result.subject.commonName != _easyrsa__cert.cd | d(_easyrsa__cert.name)
+          loop: "{{ easyrsa_clients + easyrsa_servers }}"
+          loop_control:
+            loop_var: _easyrsa__cert
+
+        - name: Check all keys are generated
+          community.crypto.openssl_privatekey_info:
+            path: "{{ easyrsa_pki_dir }}/private/{{ _easyrsa__cert.name }}.key"
+            passphrase: "{{ _easyrsa__cert.pass | d(omit) }}"
+          loop: "{{ easyrsa_clients + easyrsa_servers }}"
+          loop_control:
+            loop_var: _easyrsa__cert
+
+    - name: Check conversions produced valid certs/keys
+      block:
+        - name: Check PKCS12 bundles
+          command: >-
+            openssl pkcs12 --nokeys --passin=pass:{{ _easyrsa__cert.pass }}
+              --in {{ easyrsa_pki_dir }}/private/{{ _easyrsa__cert.name }}.p12
+          register: _result
+          changed_when: false
+          failed_when:
+            # checking the CN property as a minimal test that it is indeed the
+            # correct certificate we are checking
+            "'subject=CN = ' + _easyrsa__cert.cn | d(_easyrsa__cert.name, true)
+            not in _result.stdout"
+          loop: "{{ easyrsa_to_pkcs12 | selectattr('pass', 'defined') }}"
+          loop_control:
+            loop_var: _easyrsa__cert
+
+        - name: Check no PKCS12 for certs without password
+          file:
+            path: "{{ easyrsa_pki_dir }}/private/{{ _easyrsa__cert.name }}.p12"
+            state: absent
+          register: _result
+          failed_when: _result is changed
+          loop: "{{ easyrsa_to_pkcs12 | rejectattr('pass', 'defined') }}"
+          loop_control:
+            loop_var: _easyrsa__cert
+
+        - name: Check PKCS8 keys
+          community.crypto.openssl_privatekey_info:
+            path: "{{ easyrsa_pki_dir }}/private/{{ _easyrsa__cert.name }}.p8"
+            passphrase: "{{ _easyrsa__cert.pass | d(omit) }}"
+          register: _result
+          loop: "{{ easyrsa_to_pkcs8 }}"
+          loop_control:
+            loop_var: _easyrsa__cert
+
+        - name: Check PKCS7 certs
+          command: >-
+            openssl pkcs7 --print --noout
+              --in {{ easyrsa_pki_dir }}/issued/{{ _easyrsa__cert.name }}.p7b
+          register: _result
+          failed_when: >-
+            'subject: CN=' + _easyrsa__cert.cn | d(_easyrsa__cert.name, true) not in _result.stdout
+          changed_when: false
+          loop: "{{ easyrsa_to_pkcs7 }}"
+          loop_control:
+            loop_var: _easyrsa__cert
+
+        - name: Check PKCS1 keys
+          community.crypto.openssl_privatekey_info:
+            path: "{{ easyrsa_pki_dir }}/private/{{ _easyrsa__cert.name }}.p1"
+            passphrase: "{{ _easyrsa__cert.pass | d(omit) }}"
+          loop: "{{ easyrsa_to_pkcs1 }}"
+          loop_control:
+            loop_var: _easyrsa__cert
+
+    - name: Check config variables
+      block:
+        - name: Read available EASYRSA_ vars
+          shell: |
+            set -euo pipefail
+            set_var() {
+              var=$1
+              shift
+              value="$*"
+              eval "export $var=\"\${$var-$value}\""
+            } # copied from easyrsa script
+            EASYRSA_CALLER=1 && source /usr/local/lib/easyrsa/vars
+            compgen -A variable EASYRSA_
+          args:
+            executable: /bin/bash
+          register: _result
+          changed_when: false
+
+        - name: Parse shell output
+          set_fact:
+            _easyrsa_config_vars: "{{ _result.stdout_lines | difference(unrelated_vars) }}"
+          vars:
+            unrelated_vars:
+              - EASYRSA_CALLER
+              - EASYRSA_BATCH
+              - EASYRSA_TEMP_DIR
+
+        - name: Get role variables related to the easyrsa vars file
+          set_fact:
+            _easyrsa_role_vars: "{{ q('varnames', 'easyrsa_conf_.+')
+                                    | union(other_vars)
+                                 }}"
+            _easyrsa_role_vars_uppercase: "{{ q('varnames', 'easyrsa_conf_.+')
+                                              | union(other_vars)
+                                              | map('replace', '_conf', '', count=1)
+                                              | map('upper')
+                                           }}"
+          vars:
+            other_vars:
+              - easyrsa_pki_dir
+
+        - name: Check coverage of EASYRSA_ vars in role
+          assert:
+            that:
+              - _easyrsa_role_vars_uppercase
+                | symmetric_difference(_easyrsa_config_vars)
+                | symmetric_difference(_variations_of_pki_dir_var_name)
+                | length == 0
+            fail_msg: |
+              Role vars: {{ _easyrsa_role_vars | length }}
+              EASYRSA_ vars: {{ _easyrsa_config_vars | length }}
+              Role vars not present in EASYRSA_:
+                {{ _easyrsa_role_vars | difference(_easyrsa_config_vars) }}
+              EASYRSA_ vars not present in role:
+                {{ _easyrsa_config_vars | difference(_easyrsa_role_vars) }}
+          vars:
+            _variations_of_pki_dir_var_name:
+              - EASYRSA_PKI  # the setting name in easyrsa
+              - EASYRSA_PKI_DIR  # the setting name in the role (after `replace/upper`)
+
+        - name: Read vars file content
+          slurp:
+            src: /usr/local/lib/easyrsa/vars
+          register: _result
+
+        - name: Decode slurped file
+          set_fact:
+            _easyrsa_vars_file: "{{ (_result.content | b64decode).split('\n')}}"
+
+
+        - name: Check value of role variables is respected (except easyrsa_pki_dir)
+          assert:
+            that:
+              - _easyrsa_vars_file is search(line_regex)
+            fail_msg: "following line not found in vars file:\n{{ line_regex }}"
+          vars:
+            line_regex: >-
+              {{
+                'set_var %s \"?%s\"?'
+                | format(_easyrsa__conf_var.1, lookup('vars', _easyrsa__conf_var.0) | regex_escape)
+              }}
+          when: _easyrsa__conf_var.0 != 'easyrsa_pki_dir'
+          loop: "{{ _easyrsa_role_vars | zip(_easyrsa_role_vars_uppercase) | list }}"
+          loop_control:
+            loop_var: _easyrsa__conf_var
+
+        - name: Check value of easyrsa_pki_dir
+          assert:
+            that:
+              - _easyrsa_vars_file is contains(line)
+            fail_msg: "following line not found in vars file:\n{{ line }}"
+          vars:
+            line: "set_var EASYRSA_PKI \"{{ easyrsa_pki_dir }}\""
+
+    - name: Check vars file is read and enforced by easyrsa
+      # By checking a sample of the settings
+      block:
+        - name: Get easyrsa_pki_dir properties
+          stat:
+            path: "{{ easyrsa_pki_dir }}"
+          register: _result
+
+        - name: Check easyrsa_pki_dir is a folder
+          assert:
+            that:
+              - _result.stat.isdir | bool
+            fail_msg: "easyrsa_pki_dir ({{ easyrsa_pki_dir }}) is not a folder"
+
+        - name: Read a certificate
+          community.crypto.x509_certificate_info:
+            path: "{{ easyrsa_pki_dir }}/issued/server.crt"
+          register: _result
+
+        - name: Check certificate properties
+          assert:
+            that:
+              - _result.issuer.commonName == 'Molecule CA'
+
+    - name: Check Diffie-Hellman generated file
+      command: openssl dhparam -in "{{ easyrsa_pki_dir }}/dh.pem" --noout --text
+      changed_when: false
+      register: _result
+      failed_when: "'DH Parameters' not in _result.stdout"
+
+    - name: Check download options
+      block:
+        - name: Check individual certs/keys are downloaded
+          assert:
+            that:
+              - '[easyrsa_download_dir, _easyrsa__cert.0.name + _easyrsa__cert.1]
+                 | path_join is file'
+          loop: "{{ lookup('community.general.cartesian', easyrsa_download, ['.crt', '.key']) }}"
+          loop_control:
+            loop_var: _easyrsa__cert
+
+        - name: Check whole pki is downloaded
+          assert:
+            that:
+              - _easyrsa__path is file
+            fail_msg: "path: {{ _easyrsa__path }}"
+          loop:
+            - "{{ [easyrsa_download_dir_alt2, easyrsa_pki_dir | basename + '.zip'] | path_join }}"
+            # - "{{ [easyrsa_download_dir_alt2, easyrsa_pki_dir | basename,
+            #       'issued', easyrsa_to_pkcs7.0.name + '.p7b'] | path_join }}"
+            #       checking one random file from the pki folder
+            #       disabled currently due to:
+            #       https://github.com/ansible/ansible/issues/77831
+          loop_control:
+            loop_var: _easyrsa__path
+          become: true
+          become_user: root
+
+        - name: Check download options are respected
+          block:
+            - name: Check options
+              assert:
+                that:
+                  - easyrsa_download_dir is directory
+                  - lookup('fileglob', easyrsa_download_dir + easyrsa_pki_dir | basename + '*')
+                    | length > 10
+                  # if the pki was extracted fine, the pki folder should
+                  # contain more than 10 items, such as the `issued`,
+                  # `private`, etc folders and the CA and index related
+                  # files.`
+                  - '[easyrsa_download_dir, easyrsa_pki_dir | basename]
+                     | path_join is not exists'
+
+                  - easyrsa_download_dir_alt is not directory
+
+                  - easyrsa_download_dir_alt2 is directory
+                  - '[easyrsa_download_dir_alt2, easyrsa_pki_dir | basename + ".zip"]
+                     | path_join is file'
+                  - '[easyrsa_download_dir_alt2, easyrsa_pki_dir | basename]
+                     | path_join is directory'
+                  - '[easyrsa_download_dir_alt2, easyrsa_pki_dir | basename, "issued"]
+                     | path_join is directory'
+                  # Checking just one directory inside the download folder
+                  # that it is indeed a directory as a weak way of testing we
+                  # extracted what we were supposed to extract.
+
+            - name: Check download user
+              assert:
+                that:
+                  - owner == id
+                fail_msg: |
+                  file owner: {{ owner }}
+                  id: {{ id }}
+              vars:
+                owner: "{{ lookup('pipe', 'stat -c \"%u\" ' + _easyrsa__path) }}"
+                id: "{{ lookup('pipe', 'id --user ' + easyrsa_download_user_alt) }}"
+              loop:
+                - "{{ [easyrsa_download_dir_alt2, easyrsa_pki_dir | basename] | path_join }}"
+                - "{{ [easyrsa_download_dir_alt2, easyrsa_pki_dir | basename, 'issued']
+                      | path_join }}"
+              loop_control:
+                loop_var: _easyrsa__path
+
+    - assert:
+        that: |
+          easyrsa_enabled: true
+          # easyrsa_replace_pki: false
+          easyrsa_renew: []
+          easyrsa_revoked: []
+          easyrsa_crl_handlers: []
+
+          create ca changed_when
+          csr
+          sign client
+          sign server
+          renew
+          revoke-crl
+
+          binary installatin
+
+          tags
+
+      failed_when: true
+      when: false

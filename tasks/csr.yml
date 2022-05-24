@@ -3,13 +3,15 @@
 - name: Generate CSRs
   command: >-
     easyrsa
-      {{ '--passout=pass:' + item.pass if item.pass | default(None) else '' }}
+      {{ '--passout=pass:' + _easyrsa__cert.pass if _easyrsa__cert.pass | default(None) else '' }}
       gen-req
-      {{ item.name }}
-      {{ 'nopass' if not item.pass | default(None) else '' }}
+      {{ _easyrsa__cert.name }}
+      {{ 'nopass' if not _easyrsa__cert.pass | default(None) else '' }}
   args:
-    creates: "{{ easyrsa_pki_dir }}/issued/{{ item.name }}.crt"
+    creates: "{{ easyrsa_pki_dir }}/issued/{{ _easyrsa__cert.name }}.crt"
   environment:
-    EASYRSA_REQ_CN: "{{ item.cn | d(item.name, true) }}"
+    EASYRSA_REQ_CN: "{{ _easyrsa__cert.cn | d(_easyrsa__cert.name, true) }}"
   loop: "{{ easyrsa_servers + easyrsa_clients }}"
+  loop_control:
+    loop_var: _easyrsa__cert
   no_log: "{{ lookup('ansible.builtin.env', 'MOLECULE_FILE') is falsy }}"

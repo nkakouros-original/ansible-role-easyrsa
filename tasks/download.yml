@@ -1,50 +1,62 @@
 ---
 
-- name: Create download dir
+- name: Create download dir  # noqa risky-file-permissions
+  # Disabling file permissions check, because using `/tmp` vs `~` vs a user
+  # folder will result in different expected permissions and I don't want to
+  # mess them up by forcing them to e.g. 0o755
   file:
-    path: "{{ easyrsa_download_dir }}"
-    mode: 0o755
+    path: "{{ easyrsa_download_dir }}/pki"
     state: directory
   delegate_to: localhost
-  become: true
-  become_user: "{{ easyrsa_download_user }}"
+  # Not using `become` or `owner` for the same reason as above. For example, if
+  # `/tmp` is the `path`, I don't want to change the owner to the download user.
+  when: easyrsa_download_pki | bool or easyrsa_download | lenght > 0
 
-- name: Create pki zip
-  archive:
-    path: "{{ easyrsa_pki_dir }}"
-    dest: "{{ easyrsa_pki_dir }}.zip"
-    mode: 0o644
-    format: zip
+- name: Download whole pki
+  block:
+    - name: Create pki zip
+      archive:
+        path: "{{ easyrsa_pki_dir }}/*"
+        # using a glob so that the parent folder is not included in the archive
+        dest: "{{ easyrsa_pki_dir }}.zip"
+        mode: 0o644
+        format: zip
 
-- name: Download pki zip
-  fetch:
-    src: "{{ easyrsa_pki_dir }}.zip"
-    dest: "{{ easyrsa_download_dir }}"
-    flat: true
-    owner: "{{ lookup('env', 'USER') }}"
+    - name: Download pki zip
+      fetch:
+        src: "{{ easyrsa_pki_dir }}.zip"
+        dest: "{{ easyrsa_download_dir }}/"
+        flat: true
+
+    - name: Extract pki zip
+      unarchive:
+        src: "{{ easyrsa_download_dir }}/{{ easyrsa_pki_dir | basename }}.zip"
+        dest: "{{ easyrsa_download_dir }}/pki/"
+        # Using a glob in `archive` and adding the `pki` part of the path here
+        # manually in order to have  `unarchive` change the owner of just that
+        # `pki` folder and not of `easyrsa_download_dir` as that would create
+        # permission and idempotence issues for `fetch` above.
+        owner: "{{ easyrsa_download_user }}"
+        group: "{{ easyrsa_download_group }}"
+      delegate_to: localhost
+      become: "{{ easyrsa_download_user != ansible_user_id }}"
+      when: easyrsa_download_pki_extract | bool
   when: easyrsa_download_pki | bool
-
-- name: Extract pki zip
-  unarchive:
-    src: "{{ easyrsa_download_dir }}/{{ easyrsa_pki_dir | basename }}.zip"
-    dest: "{{ easyrsa_download_dir }}/"
-  delegate_to: localhost
-  become: true
-  become_user: "{{ easyrsa_download_user }}"
-  when:
-    - easyrsa_download_pki | bool
-    - easyrsa_download_pki_extract | bool
 
 - name: Download certificates
   fetch:
-    src: "{{ easyrsa_pki_dir }}/issued/{{ item.name }}.crt"
+    src: "{{ easyrsa_pki_dir }}/issued/{{ _easyrsa__cert.name }}.crt"
     dest: "{{ easyrsa_download_dir }}/"
     flat: true
   loop: "{{ easyrsa_download }}"
+  loop_control:
+    loop_var: _easyrsa__cert
 
 - name: Download keys
   fetch:
-    src: "{{ easyrsa_pki_dir }}/private/{{ item.name }}.key"
+    src: "{{ easyrsa_pki_dir }}/private/{{ _easyrsa__cert.name }}.key"
     dest: "{{ easyrsa_download_dir }}/"
     flat: true
   loop: "{{ easyrsa_download }}"
+  loop_control:
+    loop_var: _easyrsa__cert

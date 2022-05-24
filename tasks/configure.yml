@@ -1,23 +1,23 @@
 ---
 
-- name: Upload vars file
-  template:
-    src: vars.j2
-    dest: /usr/local/lib/easyrsa/vars
-    owner: root
-    group: root
-    mode: 0o755
-  become: true
-
 - name: Initiate PKI
   command: easyrsa init-pki
   args:
     creates: "{{ easyrsa_pki_dir }}"
   when: not easyrsa_replace_pki | bool
 
-- name: Initiate PKI
+- name: Replace PKI
   command: easyrsa init-pki
   when: easyrsa_replace_pki | bool
+
+- name: Upload vars file
+  template:
+    src: vars.j2
+    dest: "{{ easyrsa_pki_dir }}/vars"
+    owner: root
+    group: root
+    mode: 0o755
+  become: true
 
 - name: Create CA
   command: easyrsa build-ca nopass

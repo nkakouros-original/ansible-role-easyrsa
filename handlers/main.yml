@@ -1,2 +1,6 @@
 ---
-# handlers file for nkakouros.easyrsa
+
+- name: Generate CRL
+  command: easyrsa gen-crl
+  notify: "{{ easyrsa_crl_handlers }}"
+  listen: easyrsa-regen-crl

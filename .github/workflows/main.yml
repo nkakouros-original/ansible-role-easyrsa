@@ -6,11 +6,9 @@ on:  # yamllint disable-line rule:truthy
   push:
     branches:
       - master
-      - fixes
   pull_request:
     branches:
       - master
-      - fixes
 
   workflow_dispatch: ~
 
@@ -25,10 +23,7 @@ jobs:
             version: 1804
 
     env:
-      # IMAGE: jrei/systemd-${{ matrix.distro.distro }}:${{ matrix.distro.version }}
-      # IMAGE: geerlingguy-${{ matrix.distro.distro }}${{ matrix.distro.version }}-ansible
-      # INSTANCE: ${{ matrix.distro.distro }}-${{ matrix.distro.version }}
-      IMAGE: geerlingguy-ubuntu1804-ansible
+      IMAGE: geerlingguy/docker-ubuntu1804-ansible:latest
       INSTANCE: ubuntu1804
       DRIVER: docker
 
@@ -38,11 +33,19 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2.2.1
 
-      # - name: Install ansible
-        # run: pip install -U ansible
-
       - name: Install molecule
         run: pip3 install ansible-lint molecule molecule-${{ env.DRIVER }} ${{ env.DRIVER }}
+
+      - name: Get linter-config repo
+        uses: actions/checkout@v3
+        with:
+          repository: https://github.com/nkakouros-original/linter-configs
+
+      - name: Copy linter configs in place
+        run: >-
+          cp
+            ${{ github.workspace }}/linter-configs/configs/*
+            ${{ github.workspace }}/${{ github.event.repository.name }}/
 
       - name: Run molecule
         run: molecule test

@@ -1,0 +1,35 @@
+---
+
+# "Abusing" the side effect playbook to test the certificate revocation feature
+# and its idempotency.
+
+- name: Side effect
+  hosts: all
+  vars:
+    easyrsa_repo: 'https://github.com/nkakouros/easy-rsa'
+    easyrsa_version: vars
+    easyrsa_pki_dir: /etc/easyrsa/pki
+    easyrsa_download: []
+    easyrsa_revoked:
+      - name: old_client
+        reason: unspecified
+  tasks:
+    - name: Generate certificate to be revoked and revoke it
+      include_role:
+        name: nkakouros.easyrsa
+      vars:
+        easyrsa_clients:
+          - name: old_client
+
+    - meta: flush_handlers
+
+    - name: Try to re-revoke the revoked certificate
+      include_role:
+        name: nkakouros.easyrsa
+      vars:
+        easyrsa_clients: []
+
+    - name: Check idempotency of certificate revocation
+      assert:
+        that:
+          - _easyrsa_crl_regeneration_needed is not changed

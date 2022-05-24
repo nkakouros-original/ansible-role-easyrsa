@@ -2,15 +2,14 @@
 
 - name: Revoke certificates
   command: >-
-    easyrsa revoke {{ item.name }} {{ item.reason | default('unspecified') }}
+    easyrsa revoke {{ _easyrsa__cert.name }} {{ _easyrsa__cert.reason | default('unspecified') }}
   loop: "{{ easyrsa_revoked }}"
-  register: _result
+  loop_control:
+    loop_var: _easyrsa__cert
   failed_when:
-    - _result is failed
-    - _result is not search('as the input file is not a valid certificate')
-  changed_when: _result is not failed
-
-- name: Generate CRL
-  command: easyrsa gen-crl
-  when: _result is changed
-  notify: "{{ easyrsa_crl_handlers }}"
+    - _easyrsa_crl_regeneration_needed is failed
+    - _easyrsa_crl_regeneration_needed.stderr is not search('as no certificate was found.')
+  changed_when:
+    - _easyrsa_crl_regeneration_needed.stderr is not search('as no certificate was found.')
+  notify: easyrsa-regen-crl
+  register: _easyrsa_crl_regeneration_needed
