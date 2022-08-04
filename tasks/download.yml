@@ -1,5 +1,10 @@
 ---
 
+- name: Check download dir exists
+  stat:
+    path: "{{ easyrsa_download_dir }}"
+  register: _result
+
 - name: Create download dir  # noqa risky-file-permissions
   # Disabling file permissions check, because using `/tmp` vs `~` vs a user
   # folder will result in different expected permissions and I don't want to
@@ -7,10 +12,12 @@
   file:
     path: "{{ easyrsa_download_dir }}"
     state: directory
+    owner: "{{ easyrsa_download_user if not _result.stat.exists else omit }}"
+    mode: "{{ '0o755' if not _result.stat.exists else omit }}"
   delegate_to: localhost
-  # Not using `become` or `owner` for the same reason as above. For example, if
-  # `/tmp` is the `path`, I don't want to change the owner to the download user.
-  when: easyrsa_download_pki | bool or easyrsa_download | length > 0
+  # Not using `become` or `owner` (unless a new directory) for the same reason
+  # as above. For example, if `/tmp` is the `path`, I don't want to change the
+  # owner to the download user.
 
 - name: Download whole pki
   block:
@@ -21,12 +28,28 @@
         dest: "{{ easyrsa_pki_dir }}.zip"
         mode: 0o644
         format: zip
+      register: _result
 
     - name: Download pki zip
       fetch:
         src: "{{ easyrsa_pki_dir }}.zip"
         dest: "{{ easyrsa_download_dir }}/"
         flat: true
+      register: _this
+      changed_when:
+        - _this is changed
+        - _result is changed
+        # The previous task will check the contents of the new zip file against
+        # the content of the pre-existing zip file and report as changed if
+        # there were some change indeed. The actual zip files will have
+        # different checksums due to the compression algorithm used that
+        # produces different results every time, thus the zip file checksums are
+        # not used in determining the change status of the task. The fetch tasks
+        # here however uses the checksum of the downloaded file to check if it
+        # is a different file from the one downloaded previously. Technically,
+        # zip files produced by different ansible runs are indeed different, but
+        # this is a compression algorithm quirk. Thus, I set this task to
+        # changed only if the zip creation itself reports back as changed.
 
     - name: Extract zip file
       block:

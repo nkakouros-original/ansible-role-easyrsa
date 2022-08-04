@@ -35,7 +35,7 @@
   copy:
     content: |
       #!/usr/bin/env bash
-      /usr/local/lib/easyrsa/easyrsa --pki-dir={{ easyrsa_pki_dir }} "$@"
+      /usr/local/lib/easyrsa/easyrsa --batch --pki-dir={{ easyrsa_pki_dir }} "$@"
     dest: /usr/local/bin/easyrsa
     mode: 0o755
     owner: root

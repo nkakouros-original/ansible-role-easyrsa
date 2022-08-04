@@ -2,10 +2,10 @@
 
 - name: Verify
   hosts: all
-  become: true
   vars_files:
     - ../../defaults/main.yml
-    - vars.yml
+    - vars/common.yml
+    - vars/case1.yml
   tasks:
     - name: Check tests are not sabotaged
       assert:
@@ -19,6 +19,11 @@
           - easyrsa_to_pkcs7 | length > 0
           - easyrsa_to_pkcs1 | length > 0
           - easyrsa_download | length > 0
+
+    - name: Check role has run
+      assert:
+        that:
+          - ansible_role_run == true  # this will be set during the idempotence step
 
     - name: Check all certs/keys are generated
       block:
@@ -97,7 +102,37 @@
 
     - name: Check config variables
       block:
-        - name: Read available EASYRSA_ vars
+        - name: Variables that are not set by this role
+          set_fact:
+            _easyrsa_unrelated_vars:
+              - EASYRSA_CALLER
+              - EASYRSA_BATCH
+
+        - name: "Check 'unrelated vars' are still used by easyrsa"
+          # If not, we should not treat them here at all and we should just
+          # remove them from the '_easyrsa_unrelated_vars' variable.
+          block:
+            - name: "Read easyrsa's vars.example from git checkout"
+              slurp:
+                src: "{{ easyrsa_pki_dir }}/vars.example"
+              register: _result
+
+            - name: Decode slurped file
+              set_fact:
+                _easyrsa_vars_example: "{{ (_result.content | b64decode).split('\n')}}"
+
+            - name: "Check 'unrelated vars' are present in vars.example"
+              assert:
+                that:
+                  - _easyrsa_vars_example is search(_easyrsa__pattern | regex_escape)
+              loop:
+                - "{{ '\"$%s\"' | format('EASYRSA_CALLER') }}"
+                - "{{ '#set_var %s\\t' | format('EASYRSA_BATCH') }}"
+                # https://groups.google.com/g/ansible-project/c/AZA3rt6H1JY
+              loop_control:
+                loop_var: _easyrsa__pattern
+
+        - name: Read available EASYRSA_ vars on host
           shell: |
             set -euo pipefail
             set_var() {
@@ -115,13 +150,10 @@
 
         - name: Parse shell output
           set_fact:
-            _easyrsa_installed_vars: "{{ _result.stdout_lines | difference(unrelated_vars) }}"
-          vars:
-            unrelated_vars:
-              - EASYRSA_CALLER
-              - EASYRSA_BATCH
+            _easyrsa_installed_vars:
+              "{{ _result.stdout_lines | difference(_easyrsa_unrelated_vars) }}"
 
-        - name: Get role variables related to the easyrsa vars file
+        - name: Get role variables related to the config file (the vars file)
           set_fact:
             _easyrsa_role_vars: "{{ q('varnames', 'easyrsa_conf_.+') }}"
             _easyrsa_role_vars_uppercase: "{{ q('varnames', 'easyrsa_conf_.+')
@@ -211,7 +243,7 @@
               loop_control:
                 loop_var: _easyrsa__cert
 
-            - name: Check other files/dirs (case 1)
+            - name: Check other files/dirs (case 1 - converge.yml)
               assert:
                 that:
                   - easyrsa_download_dir is directory
@@ -284,7 +316,7 @@
                   id: {{ id }}
               vars:
                 owner: "{{ lookup('pipe', 'stat -c \"%u\" ' + _easyrsa__path) }}"
-                id: "{{ lookup('pipe', 'id --user ' + easyrsa_download_user_alt2) }}"
+                id: "{{ lookup('pipe', 'id --user ' + easyrsa_download_user) }}"
               loop:
                 - "{{ [easyrsa_download_dir_alt2, easyrsa_pki_dir | basename] | path_join }}"
                 - "{{ [easyrsa_download_dir_alt2, easyrsa_pki_dir | basename, 'issued']
@@ -301,7 +333,7 @@
                   gid: {{ gid }}
               vars:
                 group: "{{ lookup('pipe', 'stat -c \"%g\" ' + _easyrsa__path) }}"
-                gid: "{{ lookup('pipe', 'id --group ' + easyrsa_download_group_alt2) }}"
+                gid: "{{ lookup('pipe', 'id --group ' + easyrsa_download_group) }}"
               loop:
                 - "{{ [easyrsa_download_dir_alt2, easyrsa_pki_dir | basename] | path_join }}"
                 - "{{ [easyrsa_download_dir_alt2, easyrsa_pki_dir | basename, 'issued']
@@ -330,26 +362,58 @@
                   - '[easyrsa_download_dir_alt3, easyrsa_pki_dir | basename]
                      | path_join is not exists'
 
-    - assert:
-        that: |
-          easyrsa_enabled: true
-          # easyrsa_replace_pki: false
-          easyrsa_renew: []
-          easyrsa_revoked: []
-          easyrsa_crl_handlers: []
+    - name: Check revocation list
+      block:
+        - name: Load revocation related variables
+          include_vars:
+            file: vars/revoke.yml
 
-          easyrsa_pki_dir not ending in pki
+        - name: Check revoked certificates
+          command: easyrsa show-revoke
+          register: _result
+          changed_when: false
+          failed_when: _result.stdout_lines is not search(record)
+          vars:
+            record: "R \\| .* \\| Reason: {{ _easyrsa__cert.reason | d('None given') }} \\| CN: {{
+                        _easyrsa__cert.name }}"
+          loop: "{{ easyrsa_revoked + easyrsa_revoke_old }}"
+          loop_control:
+            loop_var: _easyrsa__cert
 
-          create ca changed_when
-          csr
-          sign client
-          sign server
-          renew
-          revoke-crl
+        - name: Check number of revoked certs
+          ...
 
-          binary installatin
+        - name: Check no old certificates unrevoked
+          command: easyrsa show-renew
+          register: _result
+          changed_when: false
+          failed_when: _result.stdout is not search(pattern)
+          vars:
+            pattern: "Showing certificates which have been renewed but NOT revoked:[^\\s]*"
 
-          tags
+        - name: Count revoked certificates in crl
+          # This is the best I can do while keeping things simple, the CRL
+          # contains the serial numbers of the revoked certificates.
+          command: easyrsa show-crl
+          register: _result
+          changed_when: false
 
-      failed_when: true
-      when: false
+        - assert:
+            that:
+              - serial_number_count == revoked_certs_count
+            fail_msg: "{{ serial_number_count }} - {{ revoked_certs_count }}"
+          vars:
+            serial_number_count: "{{ _result.stdout | regex_findall('Serial Number:') | length }}"
+            revoked_certs_count: "{{ (easyrsa_revoked + easyrsa_revoke_old) | length }}"
+#
+        - name: Check crl-triggered handlers have run
+          assert:
+            that:
+              - (easyrsa_download_dir + '/crl-handler') is file
+            fail_msg: 'no easyrsa_crl_handlers run'
+
+    - name: Check pki was replaced (side-effect)
+      stat:
+        path: "{{ easyrsa_pki_dir_alt }}/issued/one-client.crt"
+      register: _result
+      failed_when: _result.stat.exists | bool

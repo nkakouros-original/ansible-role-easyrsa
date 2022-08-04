@@ -3,7 +3,10 @@
 - name: Generate CSRs
   command: >-
     easyrsa
-      {{ '--passout=pass:' + _easyrsa__cert.pass if _easyrsa__cert.pass | default(None) else '' }}
+      {{ '--passout=pass:' + _easyrsa__cert.pass | string
+         if _easyrsa__cert.pass | default(None)
+         else ''
+      }}
       gen-req
       {{ _easyrsa__cert.name }}
       {{ 'nopass' if not _easyrsa__cert.pass | default(None) else '' }}

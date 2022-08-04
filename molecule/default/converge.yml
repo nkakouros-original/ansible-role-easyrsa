@@ -1,30 +1,10 @@
 ---
 
-- name: Converge
+- name: Run the role with most paths enabled
   hosts: all
   vars_files:
-    - vars.yml
-  roles:
-    # Case 1
-    - role: nkakouros.easyrsa
-
-    # Case 2
-    - role: nkakouros.easyrsa
-      easyrsa_download_dir: "{{ easyrsa_download_dir_alt }}"
-      easyrsa_download: []
-      easyrsa_download_pki: false
-
-    # Case 3
-    - role: nkakouros.easyrsa
-      easyrsa_download_dir: "{{ easyrsa_download_dir_alt2 }}"
-      easyrsa_download: []
-      easyrsa_download_pki: true
-      easyrsa_download_pki_extract: true
-      easyrsa_download_user: "{{ easyrsa_download_user_alt2 }}"
-      easyrsa_download_group: "{{ easyrsa_download_group_alt2 }}"
-
-    # Case 4
-    - role: nkakouros.easyrsa
-      easyrsa_download_dir: "{{ easyrsa_download_dir_alt3 }}"
-      easyrsa_download: "{{ easyrsa_clients }}"
-      easyrsa_download_pki: false
+    - vars/common.yml
+    - vars/case1.yml
+  tasks:
+    - include_role:
+        name: nkakouros.easyrsa

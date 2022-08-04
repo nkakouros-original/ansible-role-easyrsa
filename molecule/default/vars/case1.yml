@@ -1,0 +1,26 @@
+---
+
+# The first test case (converge.yml) will run the tasks of creating certs,
+# converting, etc. The other cases don't need to run these same tasks, they have
+# to do with different combinations for the download options and other things.
+# Thus, we keep these variables in a separate vars file, other than
+# vars/common.yml. These variables are not in the playbbok but in a vars file so
+# that they can be loaded in verify.yml.
+easyrsa_servers:
+  - name: server
+easyrsa_clients:
+  - name: no_pass
+  - name: int_pass_plus_reason
+    pass: 123123123  # int on purpose
+    reason: superseded
+  - name: no_reason
+  - name: normal
+    pass: password
+easyrsa_to_pkcs12: "{{ easyrsa_clients }}"
+easyrsa_to_pkcs8: "{{ easyrsa_clients }}"
+easyrsa_to_pkcs7: "{{ easyrsa_clients }}"
+easyrsa_to_pkcs1: "{{ easyrsa_clients }}"
+easyrsa_generate_dh: true
+easyrsa_download: "{{ easyrsa_clients }}"
+easyrsa_download_pki: true
+easyrsa_download_pki_extract: false

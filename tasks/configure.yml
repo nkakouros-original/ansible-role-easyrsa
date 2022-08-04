@@ -1,9 +1,9 @@
 ---
 
 - name: Initiate PKI
-  command: easyrsa init-pki
+  command: easyrsa --batch init-pki
   args:
-    creates: "{{ easyrsa_pki_dir }}"
+    creates: "{{ easyrsa_pki_dir }}/private"
   when: not easyrsa_replace_pki | bool
 
 - name: Replace PKI
@@ -17,7 +17,6 @@
     owner: root
     group: root
     mode: 0o755
-  become: true
 
 - name: Create CA
   command: easyrsa build-ca nopass

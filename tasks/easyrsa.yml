@@ -1,34 +1,27 @@
 ---
 
-- include_tasks:
-    file: install.yml
-    apply:
-      become: true
+- include_tasks: install.yml
 
 - include_tasks: configure.yml
 
-- block:  # noqa unnamed-task
-    - include_tasks: csr.yml
-    - include_tasks: sign.yml
-    - include_tasks: renew.yml
-  tags: easyrsa-replace
+- include_tasks: csr.yml
 
-- include_tasks:
-    file: revoke.yml
-    apply:
-      tags: easyrsa-revoke
-  tags: easyrsa-revoke
+- include_tasks: sign.yml
+
+- include_tasks: renew.yml
+
+- include_tasks: revoke.yml
 
 - include_tasks: convert.yml
 
 - include_tasks: dh.yml
   when: easyrsa_generate_dh | bool
 
-- include_tasks:
-    file: download.yml
-    apply:
-      tags: easyrsa-replace
-  tags: easyrsa-replace
+- include_tasks: download.yml
   when:
     - easyrsa_download | length
       or easyrsa_download_pki | bool
+
+- name: Register the role as run
+  set_fact:
+    easyrsa_role_run: true

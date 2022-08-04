@@ -33,14 +33,15 @@ easyrsa_conf_ssl_conf: "$EASYRSA/openssl-easyrsa.cnf"
 easyrsa_servers: []
 easyrsa_clients: []
 easyrsa_renew: []
+easyrsa_revoke_old: []
 easyrsa_revoked: []
-easyrsa_download: "{{ easyrsa_clients }}"
+easyrsa_download: []
 easyrsa_crl_handlers: []
 easyrsa_download_pki: false
 easyrsa_download_pki_extract: true
 easyrsa_download_dir: '/tmp/'
-easyrsa_download_user: "{{ ansible_user_id }}"
-easyrsa_download_group: "{{ easyrsa_download_user }}"
+easyrsa_download_user: "{{ lookup('pipe', 'id --user --name') }}"
+easyrsa_download_group: "{{ lookup('pipe', 'id --group --name') }}"
 easyrsa_to_pkcs12: []
 easyrsa_to_pkcs8: []
 easyrsa_to_pkcs7: []

@@ -1,2 +1,3 @@
 ---
-# vars file for nkakouros.easyrsa
+
+easyrsa_role_run: false

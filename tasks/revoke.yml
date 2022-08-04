@@ -3,13 +3,10 @@
 - name: Revoke certificates
   command: >-
     easyrsa revoke {{ _easyrsa__cert.name }} {{ _easyrsa__cert.reason | default('unspecified') }}
+  args:
+    removes: "{{ easyrsa_pki_dir }}/issued/{{ _easyrsa__cert.name }}.crt"
   loop: "{{ easyrsa_revoked }}"
   loop_control:
     loop_var: _easyrsa__cert
-  failed_when:
-    - _easyrsa_crl_regeneration_needed is failed
-    - _easyrsa_crl_regeneration_needed.stderr is not search('as no certificate was found.')
-  changed_when:
-    - _easyrsa_crl_regeneration_needed.stderr is not search('as no certificate was found.')
   notify: easyrsa-regen-crl
-  register: _easyrsa_crl_regeneration_needed
+  register: _easyrsa_crl_regeneration_needed_due_to_revoke
