@@ -48,7 +48,7 @@ jobs:
         run: >-
           cp
           ${{ github.workspace }}/linter-configs/configs/*
-          ${{ github.workspace }}/${{ github.event.repository.name }}/
+          ${{ github.workspace }}/
 
       - name: Run molecule
         run: molecule test
