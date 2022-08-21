@@ -386,13 +386,12 @@
             that:
               - _result.stdout_lines is search(record)
           vars:
-            record: "R \\| .* \\| Reason: {{ _easyrsa__cert.reason | d('None given') }} \\| CN: {{
+            record:  # noqa var-spacing
+              "R \\| .* \\| Reason: {{ _easyrsa__cert.reason | d('None given') }} \\| CN: {{
                         _easyrsa__cert.name }}"
           loop: "{{ easyrsa_revoked + easyrsa_revoke_old }}"
           loop_control:
             loop_var: _easyrsa__cert
-          tags:
-            - skip_ansible_lint
 
         - name: Check number of revoked certs
           assert:
