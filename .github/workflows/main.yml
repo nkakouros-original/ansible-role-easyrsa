@@ -46,6 +46,7 @@ jobs:
       - name: Copy linter configs in place
         run: >-
           pwd;
+          ls;
           cp
           ${{ github.workspace }}/linter-configs/configs/*
           ${{ github.workspace }}/${{ github.event.repository.name }}/
