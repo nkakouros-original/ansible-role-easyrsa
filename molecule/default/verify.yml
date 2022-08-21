@@ -404,13 +404,16 @@
                 num_of_old_revoked: {{ num_of_old_revoked }}
                 num_of_revoked_certs_specified: {{ num_of_revoked_certs_specified }}
                 num_of_easyrsa_revoke_old: {{ num_of_easyrsa_revoke_old }}
+                easyrsa_revoke_old: {{ easyrsa_revoke_old }}
+                _result.stdout_lines: {{ _result.stdout_lines }}
+                easyrsa_revoked: {{ easyrsa_revoked }}
           vars:
             num_of_revoked_certs:
               "{{ _result.stdout_lines | select('search', 'Serial:') | length }}"
             num_of_old_revoked:
               "{{ _result.stdout_lines | select('search', 'Reason: superseded') | length }}"
             num_of_revoked_certs_specified: "{{ (easyrsa_revoked + easyrsa_revoke_old) | length }}"
-            num_of_easyrsa_revoke_old: "{{ num_of_easyrsa_revoke_old | length }}"
+            num_of_easyrsa_revoke_old: "{{ easyrsa_revoke_old | length }}"
 
         - name: Check no old certificates unrevoked
           command: easyrsa --pki-dir="{{ easyrsa_pki_dir }}" show-renew
