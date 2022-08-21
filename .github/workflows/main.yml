@@ -27,7 +27,6 @@ jobs:
     env:
       IMAGE: geerlingguy/docker-ubuntu1804-ansible:latest
       INSTANCE: ubuntu1804
-      DRIVER: docker
 
     steps:
       - uses: actions/checkout@v3
@@ -36,7 +35,7 @@ jobs:
         uses: actions/setup-python@v2.2.1
 
       - name: Install molecule
-        run: pip3 install ansible-lint molecule molecule-${{ env.DRIVER }} ${{ env.DRIVER }}
+        run: pip3 install ansible-lint molecule molecule-docker docker
 
       - name: Get linter-config repo
         uses: actions/checkout@v3
@@ -46,12 +45,12 @@ jobs:
 
       - name: Copy linter configs in place
         run: >-
-          cp
-          ${{ github.workspace }}/linter-configs/configs/*
-          ${{ github.workspace }}/
+          cp -r
+          ${{ github.workspace }}/linter-configs/configs/.
+          ${{ github.workspace }}/;
 
       - name: Run molecule
-        run: molecule test
+        run: molecule -c molecule.yml test
         env:
           MOLECULE_DOCKER_IMAGE: ${{ env.IMAGE }}
           MOLECULE_INSTANCE_NAME: ${{ env.INSTANCE }}

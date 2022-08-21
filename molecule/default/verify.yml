@@ -127,7 +127,7 @@
 
             - name: Decode slurped file
               set_fact:
-                _easyrsa_vars_example: "{{ (_result.content | b64decode).split('\n')}}"
+                _easyrsa_vars_example: "{{ (_result.content | b64decode).split('\n') }}"
 
             - name: "Check 'unrelated vars' are present in vars.example"
               assert:
@@ -190,7 +190,7 @@
 
         - name: Decode slurped file
           set_fact:
-            _easyrsa_vars_file: "{{ (_result.content | b64decode).split('\n')}}"
+            _easyrsa_vars_file: "{{ (_result.content | b64decode).split('\n') }}"
 
         - name: Check value of role variables is respected in vars file
           assert:
@@ -391,6 +391,8 @@
           loop: "{{ easyrsa_revoked + easyrsa_revoke_old }}"
           loop_control:
             loop_var: _easyrsa__cert
+          tags:
+            - skip_ansible_lint
 
         - name: Check number of revoked certs
           assert:
