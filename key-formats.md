@@ -26,7 +26,7 @@ Two standards are used to store private keys:
     - _produce_: `openssl genrsa`
     - _read_: `openssl rsa -in file -text`
 - __PKCS#8__:
-  - A private key format that, in the key data, also include the key type. The
+  - A private key format that, in the key data, also includes the key type. The
     key type may be RSA, in which case the PKCS#8 file contains:
     `key-type(RSA) + PKCS#1`
   - _key header_:

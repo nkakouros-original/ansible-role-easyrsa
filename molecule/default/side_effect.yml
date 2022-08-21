@@ -1,0 +1,113 @@
+---
+
+# - Cannot add these to converge.yml because they will cause idempotence
+#   issues, since tasks in the role will run multiple times (since we are
+#   running the role multiple times or because the steps that need to be
+#   followed will break idempotence).
+# - "Abusing" the side-effect playbook to avoid creating multiple scenarios
+#   with difference converge playbooks.
+# - These will not be included in the idempotence check (idempotence runs
+#   before side-effects). The converge.yml playbook should run all paths in
+#   the code, thus it should be enough for the idempotence check.
+# - verify.yml runs after the side-effects, thus it will cover the cases
+#   included here as well.
+
+- name: Disable role
+  hosts: all
+  vars:
+    easyrsa_enabled: false
+  roles:
+    - nkakouros.easyrsa
+  tasks:
+    - name: Check role did not run
+      assert:
+        that:
+          - easyrsa_role_run == false
+
+- name: Disable all downloading, nothing should be created on the controller (case 2)
+  hosts: all
+  vars_files:
+    - vars/common.yml
+  roles:
+    - role: nkakouros.easyrsa
+      easyrsa_download_dir: "{{ easyrsa_download_dir_alt }}"
+      easyrsa_download: []
+      easyrsa_download_pki: false
+
+- name: Download the whole pki, no separate certs/keys (case 3)
+  hosts: all
+  vars_files:
+    - vars/common.yml
+  roles:
+    - role: nkakouros.easyrsa
+      easyrsa_download_dir: "{{ easyrsa_download_dir_alt2 }}"
+      easyrsa_download: []
+      easyrsa_download_pki: true
+      easyrsa_download_pki_extract: true
+
+- name: Download separate certs/keys, not the whole pki (case 4)
+  hosts: all
+  vars_files:
+    - vars/common.yml
+  tasks:
+    - name: Load case1 vars to read the clients
+      include_vars:
+        file: vars/case1.yml
+        name: case1
+
+    - name: Run the role
+      include_role:
+        name: nkakouros.easyrsa
+      vars:
+        easyrsa_download_dir: "{{ easyrsa_download_dir_alt3 }}"
+        easyrsa_download: "{{ case1.easyrsa_clients }}"
+        easyrsa_download_pki: false
+
+- name: Revoke/renvew certificates and manually check idempotency
+  hosts: all
+  vars_files:
+    - vars/common.yml
+    - vars/revoke.yml
+  handlers:
+    - name: Handler that should be notified during crl creation/update
+      copy:
+        dest: "{{ _easyrsa_crl_handler_lock_file }}"
+        content: 'placeholder'
+        mode: 0o644
+      listen: _easyrsa-crl-triggered-handler
+      delegate_to: localhost
+  tasks:
+    - name: Generate certificate to be revoked and revoke it
+      include_role:
+        name: nkakouros.easyrsa
+        public: true
+
+    - meta: flush_handlers  # noqa unnamed-task
+
+    - name: Try to re-revoke the revoked certificate
+      include_role:
+        name: nkakouros.easyrsa
+      vars:
+        easyrsa_clients: []
+        easyrsa_renew: []
+
+    - name: Check idempotency of certificate revocation
+      assert:
+        that:
+          - _easyrsa_crl_regeneration_needed_due_to_revoke is not changed
+          - _easyrsa_crl_regeneration_needed_due_to_revoke_renewed is not changed
+
+- name: Replace pki
+  hosts: all
+  vars_files:
+    - vars/common.yml
+  roles:
+    - role: nkakouros.easyrsa
+      easyrsa_pki_dir: "{{ easyrsa_pki_dir_alt }}"
+      easyrsa_replace_pki: true
+      easyrsa_clients:
+        - name: one-client
+
+    - role: nkakouros.easyrsa
+      easyrsa_pki_dir: "{{ easyrsa_pki_dir_alt }}"
+      easyrsa_replace_pki: true

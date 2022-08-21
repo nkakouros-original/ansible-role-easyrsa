@@ -2,14 +2,20 @@
 
 - name: Prepare
   hosts: all
-  vars:
-    # Generate certificates to revoke during Converge
-    easyrsa_pki_dir: /etc/easyrsa/pki
-    easyrsa_clients:
-      - name: old_client
-  roles:
-    - role: nkakouros.easyrsa
-  pre_tasks:
-    - name: Install git
-      package:
-        name: git
+  vars_files:
+    - ../../defaults/main.yml
+    - vars/common.yml
+    - vars/case1.yml
+    - vars/revoke.yml
+  tasks:
+    - name: Delete files used by the tests in case they already exist in the system
+      file:
+        path: "{{ _easyrsa__path }}"
+        state: absent
+      loop: "{{ q('ansible.builtin.varnames', 'easyrsa(?!_conf_).*_dir.*')
+                + q('ansible.builtin.varnames', 'easyrsa(?!_conf_).*_path.*')
+                + q('ansible.builtin.varnames', 'easyrsa(?!_conf_).*_file.*')
+             }}"
+      loop_control:
+        loop_var: _easyrsa__path
+      delegate_to: localhost

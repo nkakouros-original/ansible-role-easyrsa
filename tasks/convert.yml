@@ -9,30 +9,20 @@
   # PKCS#12 needs an output password
   when: item['pass'] | default(None)
   loop: "{{ easyrsa_to_pkcs12 }}"
-  no_log: >-
-    {{
-      lookup('env', 'IN_MOLECULE')
-      | default(false, true)
-      | ternary(false, true)
-    }}
+  no_log: "{{ lookup('ansible.builtin.env', 'MOLECULE_FILE') is falsy }}"
 
 - name: Convert private keys to PKCS#8
   command: >-
     openssl pkcs8 -topk8
       -in '{{ easyrsa_pki_dir }}/private/{{ item.name }}.key'
       -out '{{ easyrsa_pki_dir }}/private/{{ item.name }}.p8'
-      {{ '-passin pass:' + item.pass if item.pass | default(None) else '' }}
-      {{ '-passout pass:' + item.pass if item.pass | default(None) else
+      {{ '-passin pass:' + item.pass | string if item.pass | default(None) else '' }}
+      {{ '-passout pass:' + item.pass | string if item.pass | default(None) else
         '-nocrypt' }}
   args:
     creates: "{{ easyrsa_pki_dir }}/private/{{ item.name }}.p8"
   loop: "{{ easyrsa_to_pkcs8 }}"
-  no_log: >-
-    {{
-      lookup('env', 'IN_MOLECULE')
-      | default(false, true)
-      | ternary(false, true)
-    }}
+  no_log: "{{ lookup('ansible.builtin.env', 'MOLECULE_FILE') is falsy }}"
 
 - name: Convert certificates to PKCS#7
   command: >-
@@ -46,15 +36,10 @@
     openssl rsa
       -in '{{ easyrsa_pki_dir }}/private/{{ item.name }}.key'
       -out '{{ easyrsa_pki_dir }}/private/{{ item.name }}.p1'
-      {{ '-passin pass:' + item.pass if item.pass | default(None) else '' }}
-      {{ '-aes256 -passout pass:' + item.pass if item.pass | default(None) else
+      {{ '-passin pass:' + item.pass | string if item.pass | default(None) else '' }}
+      {{ '-aes256 -passout pass:' + item.pass | string if item.pass | default(None) else
          '' }}
   args:
     creates: "{{ easyrsa_pki_dir }}/private/{{ item.name }}.p1"
   loop: "{{ easyrsa_to_pkcs1 }}"
-  no_log: >-
-    {{
-      lookup('env', 'IN_MOLECULE')
-      | default(false, true)
-      | ternary(false, true)
-    }}
+  no_log: "{{ lookup('ansible.builtin.env', 'MOLECULE_FILE') is falsy }}"

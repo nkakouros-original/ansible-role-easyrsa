@@ -1,0 +1,17 @@
+---
+
+easyrsa_pki_dir: /etc/easyrsa/store
+easyrsa_pki_dir_alt: /etc/easyrsa/store2
+
+easyrsa_conf_req_cn: "Molecule CA"
+# easyrsa_repo: https://github.com/nkakouros/easy-rsa
+# easyrsa_version: v3.1.0
+
+easyrsa_download_dir: '/tmp/easyrsa-ansible-role'
+
+easyrsa_download_dir_alt: '/tmp/easyrsa-ansible-role/alternative'
+# on purpose without a trailing slash
+
+easyrsa_download_dir_alt2: '/tmp/easyrsa-ansible-role/alternative2'
+
+easyrsa_download_dir_alt3: '/tmp/easyrsa-ansible-role/alternative3/'

@@ -1,6 +1,4 @@
 ---
 
-- import_tasks: easyrsa.yml
+- include_tasks: easyrsa.yml
   when: easyrsa_enabled | bool
-  tags:
-    - easyrsa

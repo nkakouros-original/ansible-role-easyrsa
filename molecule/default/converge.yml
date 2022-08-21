@@ -1,0 +1,15 @@
+---
+
+- name: Run the role with most paths enabled
+  hosts: all
+  vars_files:
+    - vars/common.yml
+    - vars/case1.yml
+  tasks:
+    - name: Run the role
+      include_role:
+        name: nkakouros.easyrsa
+
+    - name: Register that the converge tasks have finished
+      set_fact:
+        _molecule_converge_run: true

@@ -1,13 +1,17 @@
 ---
 
 - name: Sign server certificates
-  command: easyrsa sign-req server "{{ item.name }}"
+  command: easyrsa sign-req server "{{ _easyrsa__server.name }}"
   args:
-    creates: "{{ easyrsa_pki_dir }}/issued/{{ item.name }}.crt"
+    creates: "{{ easyrsa_pki_dir }}/issued/{{ _easyrsa__server.name }}.crt"
   loop: "{{ easyrsa_servers }}"
+  loop_control:
+    loop_var: _easyrsa__server
 
 - name: Sign client certificates
-  command: easyrsa sign-req client "{{ item.name }}"
+  command: easyrsa sign-req client "{{ _easyrsa__client.name }}"
   args:
-    creates: "{{ easyrsa_pki_dir }}/issued/{{ item.name }}.crt"
+    creates: "{{ easyrsa_pki_dir }}/issued/{{ _easyrsa__client.name }}.crt"
   loop: "{{ easyrsa_clients }}"
+  loop_control:
+    loop_var: _easyrsa__client
