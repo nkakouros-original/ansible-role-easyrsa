@@ -388,7 +388,6 @@
           vars:
             record:  # noqa var-spacing
               "R \\| .* \\| Reason: {{ _easyrsa__cert.reason | d('None given') }} \\| CN: {{
-                9
                         _easyrsa__cert.name }}"
           loop: "{{ easyrsa_revoked + easyrsa_revoke_old }}"
           loop_control:
