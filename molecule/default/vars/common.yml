@@ -15,4 +15,3 @@ easyrsa_download_dir_alt: '/tmp/easyrsa-ansible-role/alternative'
 easyrsa_download_dir_alt2: '/tmp/easyrsa-ansible-role/alternative2'
 
 easyrsa_download_dir_alt3: '/tmp/easyrsa-ansible-role/alternative3/'
-

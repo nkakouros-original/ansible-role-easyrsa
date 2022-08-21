@@ -9,6 +9,8 @@ on:  # yamllint disable-line rule:truthy
   pull_request:
     branches:
       - master
+  schedule:
+    - cron: '0 0 * * 0'  # run every Sunday
 
   workflow_dispatch: ~
 

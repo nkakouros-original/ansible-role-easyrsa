@@ -9,7 +9,9 @@ easyrsa_revoked:
   - name: old_client
     reason: unspecified
 
-easyrsa_revoke_old: "{{ easyrsa_revoked }}"
+easyrsa_revoke_old:
+  - name: old_client
+    reason: superseded
 
 easyrsa_crl_handlers:
   - _easyrsa-crl-triggered-handler

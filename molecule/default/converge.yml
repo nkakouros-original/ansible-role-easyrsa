@@ -6,5 +6,10 @@
     - vars/common.yml
     - vars/case1.yml
   tasks:
-    - include_role:
+    - name: Run the role
+      include_role:
         name: nkakouros.easyrsa
+
+    - name: Register that the converge tasks have finished
+      set_fact:
+        _molecule_converge_run: true

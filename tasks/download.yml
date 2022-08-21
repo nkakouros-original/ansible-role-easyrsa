@@ -64,7 +64,7 @@
         - name: Extract pki zip
           unarchive:
             src: "{{ easyrsa_download_dir }}/{{ easyrsa_pki_dir | basename }}.zip"
-            dest: "{{ easyrsa_download_dir }}/pki/"
+            dest: "{{ easyrsa_download_dir }}/{{ easyrsa_pki_dir | basename }}/"
             # Using a glob in `archive` and adding the `pki` part of the path here
             # manually in order to have  `unarchive` change the owner of just that
             # `pki` folder and not of `easyrsa_download_dir` as that would create

@@ -73,7 +73,8 @@
     - name: Handler that should be notified during crl creation/update
       copy:
         dest: "{{ _easyrsa_crl_handler_lock_file }}"
-        content: 'run'
+        content: 'placeholder'
+        mode: 0o644
       listen: _easyrsa-crl-triggered-handler
       delegate_to: localhost
   tasks:
@@ -82,7 +83,7 @@
         name: nkakouros.easyrsa
         public: true
 
-    - meta: flush_handlers
+    - meta: flush_handlers  # noqa unnamed-task
 
     - name: Try to re-revoke the revoked certificate
       include_role:

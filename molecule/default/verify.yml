@@ -1,5 +1,12 @@
 ---
 
+# When calling `easyrsa` in `command` or `shell` modules, the `--pki-dir` option
+# to `easyrsa` should be supplied. Otherwise, there may be overlapping
+# `/usr/local/bin/easyrsa` definitions from the various plays in `converge.yml`
+# and `side-effect.yml` and only the last one will have effect. If a check
+# refers to a play but the last and uses such a `command` module, it will fail,
+# as `easyrsa` will be referring to another pki dir that the one expected.
+
 - name: Verify
   hosts: all
   vars_files:
@@ -24,6 +31,7 @@
       assert:
         that:
           - ansible_role_run == true  # this will be set during the idempotence step
+      when: _molecule_converge_run is defined
 
     - name: Check all certs/keys are generated
       block:
@@ -368,11 +376,15 @@
           include_vars:
             file: vars/revoke.yml
 
-        - name: Check revoked certificates
-          command: easyrsa show-revoke
+        - name: List revoked certificates
+          command: easyrsa --pki-dir="{{ easyrsa_pki_dir }}" show-revoke
           register: _result
           changed_when: false
-          failed_when: _result.stdout_lines is not search(record)
+
+        - name: Check certificates are revoked
+          assert:
+            that:
+              - _result.stdout_lines is search(record)
           vars:
             record: "R \\| .* \\| Reason: {{ _easyrsa__cert.reason | d('None given') }} \\| CN: {{
                         _easyrsa__cert.name }}"
@@ -381,31 +393,44 @@
             loop_var: _easyrsa__cert
 
         - name: Check number of revoked certs
-          ...
+          assert:
+            that:
+              - num_of_revoked_certs == num_of_revoked_certs_specified
+              - num_of_old_revoked == easyrsa_revoke_old | length
+            msg: |
+              Values:
+                num_of_revoked_certs: {{ num_of_revoked_certs }}
+                num_of_old_revoked: {{ num_of_old_revoked }}
+                num_of_revoked_certs_specified: {{ num_of_revoked_certs_specified }}
+          vars:
+            num_of_revoked_certs:
+              "{{ _result.stdout_lines | select('search', 'Serial:') | length }}"
+            num_of_old_revoked:
+              "{{ _result.stdout_lines | select('search', 'Reason: superseded') | length }}"
+            num_of_revoked_certs_specified: "{{ (easyrsa_revoked + easyrsa_revoke_old) | length }}"
 
         - name: Check no old certificates unrevoked
-          command: easyrsa show-renew
+          command: easyrsa --pki-dir="{{ easyrsa_pki_dir }}" show-renew
           register: _result
           changed_when: false
-          failed_when: _result.stdout is not search(pattern)
-          vars:
-            pattern: "Showing certificates which have been renewed but NOT revoked:[^\\s]*"
+          failed_when: '_result.stdout is search("Expires: ")'
 
-        - name: Count revoked certificates in crl
+        - name: Print CRL
           # This is the best I can do while keeping things simple, the CRL
           # contains the serial numbers of the revoked certificates.
-          command: easyrsa show-crl
+          command: easyrsa --pki-dir="{{ easyrsa_pki_dir }}" show-crl
           register: _result
           changed_when: false
 
-        - assert:
+        - name: Count revoked certificates in crl
+          assert:
             that:
               - serial_number_count == revoked_certs_count
             fail_msg: "{{ serial_number_count }} - {{ revoked_certs_count }}"
           vars:
             serial_number_count: "{{ _result.stdout | regex_findall('Serial Number:') | length }}"
             revoked_certs_count: "{{ (easyrsa_revoked + easyrsa_revoke_old) | length }}"
-#
+
         - name: Check crl-triggered handlers have run
           assert:
             that:
