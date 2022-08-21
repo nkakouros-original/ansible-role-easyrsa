@@ -10,6 +10,7 @@
       command: id
       changed_when: false
       failed_when: true
+      delegate_to: localhost
     - name: Run the role
       include_role:
         name: nkakouros.easyrsa

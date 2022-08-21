@@ -24,7 +24,6 @@
         that:
           - easyrsa_role_run == false
 
-
 - name: Disable all downloading, nothing should be created on the controller (case 2)
   hosts: all
   vars_files:
