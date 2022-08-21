@@ -56,4 +56,4 @@ jobs:
         env:
           MOLECULE_DOCKER_IMAGE: ${{ env.IMAGE }}
           MOLECULE_INSTANCE_NAME: ${{ env.INSTANCE }}
-          DRIVER: ${{ env.DRIVER }}
+          MOLECULE_DRIVER: ${{ env.DRIVER }}
