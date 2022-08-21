@@ -341,7 +341,7 @@
                   gid: {{ gid }}
               vars:
                 group: "{{ lookup('pipe', 'stat -c \"%g\" ' + _easyrsa__path) }}"
-                gid: "{{ lookup('pipe', 'id --group ' + easyrsa_download_group) }}"
+                gid: "{{ lookup('pipe', 'id --group ' + easyrsa_download_user) }}"
               loop:
                 - "{{ [easyrsa_download_dir_alt2, easyrsa_pki_dir | basename] | path_join }}"
                 - "{{ [easyrsa_download_dir_alt2, easyrsa_pki_dir | basename, 'issued']
@@ -388,6 +388,7 @@
           vars:
             record:  # noqa var-spacing
               "R \\| .* \\| Reason: {{ _easyrsa__cert.reason | d('None given') }} \\| CN: {{
+                9
                         _easyrsa__cert.name }}"
           loop: "{{ easyrsa_revoked + easyrsa_revoke_old }}"
           loop_control:
