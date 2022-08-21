@@ -35,7 +35,7 @@ jobs:
         uses: actions/setup-python@v2.2.1
 
       - name: Install molecule
-        run: pip3 install ansible-lint molecule molecule-docker docker flake8
+        run: pip3 install ansible-lint molecule molecule-podman podman flake8
 
       - name: Get linter-config repo
         uses: actions/checkout@v3
