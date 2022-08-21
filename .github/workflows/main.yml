@@ -41,7 +41,7 @@ jobs:
       - name: Get linter-config repo
         uses: actions/checkout@v3
         with:
-          repository: https://github.com/nkakouros-original/linter-configs
+          repository: nkakouros-original/linter-configs
 
       - name: Copy linter configs in place
         run: >-
