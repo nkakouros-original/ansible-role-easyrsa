@@ -1,5 +1,4 @@
-[![Build
-Status](https://travis-ci.com/nkakouros-original/ansible-role-easyrsa.svg?branch=master)](https://travis-ci.com/nkakouros-original/ansible-role-easyrsa)
+[![CI](https://github.com/nkakouros-original/ansible-role-easyrsa/actions/workflows/main.yml/badge.svg)](https://github.com/nkakouros-original/ansible-role-easyrsa/actions/workflows/main.yml)
 [![Galaxy](https://img.shields.io/badge/galaxy-nkakouros.easyrsa-blue.svg)](https://galaxy.ansible.com/nkakouros/easyrsa/)
 
 Ansible Role: EasyRSA
