@@ -26,9 +26,9 @@ jobs:
       matrix:
         distro:
           - image: geerlingguy/docker-ubuntu1804-ansible:latest
-            instance_name: ${{ env.role_name }}-ubuntu1804-molecule
+            instance_name: ubuntu1804-molecule
           - image: carlodepieri/docker-archlinux-ansible
-            instance_name: ${{ env.role_name }}-archlinux-molecule
+            instance_name: archlinux-molecule
 
     steps:
       - uses: actions/checkout@v3
@@ -56,5 +56,5 @@ jobs:
         run: molecule -c molecule.yml test
         env:
           CUSTOM_MOLECULE_CONTAINER_IMAGE: ${{ matrix.distro.image }}
-          CUSTOM_MOLECULE_INSTANCE_NAME: ${{ matrix.distro.instance_name }}
+          CUSTOM_MOLECULE_INSTANCE_NAME: ${{ env.role_name}}-{{ matrix.distro.instance_name }}
           CUSTOM_MOLECULE_DRIVER: ${{ env.DRIVER }}
