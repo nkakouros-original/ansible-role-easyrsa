@@ -14,13 +14,13 @@ on:  # yamllint disable-line rule:truthy
 
   workflow_dispatch: ~
 
+env:
+  driver: docker
+  role_name: nkakouros.easyrsa
+
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    env:
-      driver: docker
-      role_name: nkakouros.easyrsa
 
     strategy:
       matrix:
