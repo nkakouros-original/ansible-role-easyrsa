@@ -18,16 +18,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      driver: docker
+      role_name: nkakouros.easyrsa
+
     strategy:
       matrix:
         distro:
-          - distro: ubuntu
-            version: 1804
-
-    env:
-      IMAGE: geerlingguy/docker-ubuntu1804-ansible:latest
-      INSTANCE: ubuntu1804
-      DRIVER: docker
+          - image: geerlingguy/docker-ubuntu1804-ansible:latest
+            instance_name: ${{ env.role_name }}-ubuntu1804-molecule
+          - image: carlodepieri/docker-archlinux-ansible
+            instance_name: ${{ env.role_name }}-archlinux-molecule
 
     steps:
       - uses: actions/checkout@v3
@@ -54,6 +55,6 @@ jobs:
       - name: Run molecule
         run: molecule -c molecule.yml test
         env:
-          MOLECULE_DOCKER_IMAGE: ${{ env.IMAGE }}
-          MOLECULE_INSTANCE_NAME: ${{ env.INSTANCE }}
-          MOLECULE_DRIVER: ${{ env.DRIVER }}
+          CUSTOM_MOLECULE_CONTAINER_IMAGE: ${{ matrix.distro.image }}
+          CUSTOM_MOLECULE_INSTANCE_NAME: ${{ matrix.distro.instance_name }}
+          CUSTOM_MOLECULE_DRIVER: ${{ env.DRIVER }}

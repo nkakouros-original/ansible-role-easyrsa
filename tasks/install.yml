@@ -4,6 +4,17 @@
   apt:
     name: "{{ packages }}"
     update_cache: true
+  when: ansible_os_family == 'Debian'
+  vars:
+    packages:
+      - openssl
+      - git
+
+- name: Install dependencies (Arch Linux)
+  community.general.pacman:
+    name: "{{ packages }}"
+    update_cache: true
+  when: ansible_os_family == 'Archlinux'
   vars:
     packages:
       - openssl
