@@ -23,7 +23,7 @@ Linux distro as well.
 Role Variables
 --------------
 
-See [defaults/main.yml](defaults/main.yml) for a full list of variables together
+See [meta/argument_specs.yml](meta/argument_specs.yml) for a full list of variables together
 with documentation on how to use them to configure this role.
 
 For more info on the different key formats that easyrsa can generate, take
@@ -36,7 +36,7 @@ and `easyrsa_role_run` will be set to `false`.
 Example Playbook
 ----------------
 
-See [molecule/default/playbook.yml](molecule/default/playbook.yml) and
+See [molecule/default/converge.yml](molecule/default/converge.yml) and
 [molecule/default/side_effect.yml](molecule/default/side_effect.yml) for
 working examples of how to use this role
 
