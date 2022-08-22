@@ -57,5 +57,5 @@ jobs:
         run: molecule -c molecule.yml test
         env:
           CUSTOM_MOLECULE_CONTAINER_IMAGE: ${{ matrix.distro.image }}
-          CUSTOM_MOLECULE_INSTANCE_NAME: ${{ env.role_name}}-{{ matrix.distro.instance_name }}
+          CUSTOM_MOLECULE_INSTANCE_NAME: ${{ env.role_name}}-${{ matrix.distro.instance_name }}
           CUSTOM_MOLECULE_DRIVER: ${{ env.driver }}
