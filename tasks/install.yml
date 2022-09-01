@@ -4,6 +4,7 @@
   apt:
     name: "{{ packages }}"
     update_cache: true
+  become: true
   when: ansible_os_family == 'Debian'
   vars:
     packages:
@@ -14,6 +15,7 @@
   community.general.pacman:
     name: "{{ packages }}"
     update_cache: true
+  become: true
   when: ansible_os_family == 'Archlinux'
   vars:
     packages:
@@ -34,6 +36,7 @@
     mode: 0o755
     owner: root
     group: root
+  become: true
 
 - name: Set permissions
   file:
@@ -41,6 +44,7 @@
     state: directory
     recurse: true
     mode: o+rX
+  become: true
 
 - name: Install binary
   copy:
@@ -51,3 +55,4 @@
     mode: 0o755
     owner: root
     group: root
+  become: true
