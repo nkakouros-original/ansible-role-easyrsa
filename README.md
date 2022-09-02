@@ -14,8 +14,6 @@ Requirements
 - The role is being tested against Ubuntu 18.04 but it should work with any other
 Linux distro as well.
 
-- `git` should be already installed.
-
 - This role needs to be run with `become: true`, i.e. it assumes it runs as the
   root user.
 
