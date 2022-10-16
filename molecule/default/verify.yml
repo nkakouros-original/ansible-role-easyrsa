@@ -386,7 +386,7 @@
             that:
               - _result.stdout_lines is search(record)
           vars:
-            record:  # noqa var-spacing
+            record:  # noqa jinja[spacing]
               "R \\| .* \\| Reason: {{ _easyrsa__cert.reason | d('None given') }} \\| CN: {{
                         _easyrsa__cert.name }}"
           loop: "{{ easyrsa_revoked + easyrsa_revoke_old }}"

@@ -82,7 +82,7 @@
         name: nkakouros.easyrsa
         public: true
 
-    - meta: flush_handlers  # noqa unnamed-task
+    - meta: flush_handlers  # noqa name[missing]
 
     - name: Try to re-revoke the revoked certificate
       include_role:

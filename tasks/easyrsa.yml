@@ -1,23 +1,23 @@
 ---
 
-- include_tasks: install.yml
+- include_tasks: install.yml  # noqa name[missing]
 
-- include_tasks: configure.yml
+- include_tasks: configure.yml  # noqa name[missing]
 
-- include_tasks: csr.yml
+- include_tasks: csr.yml  # noqa name[missing]
 
-- include_tasks: sign.yml
+- include_tasks: sign.yml  # noqa name[missing]
 
-- include_tasks: renew.yml
+- include_tasks: renew.yml  # noqa name[missing]
 
-- include_tasks: revoke.yml
+- include_tasks: revoke.yml  # noqa name[missing]
 
-- include_tasks: convert.yml
+- include_tasks: convert.yml  # noqa name[missing]
 
-- include_tasks: dh.yml
+- include_tasks: dh.yml  # noqa name[missing]
   when: easyrsa_generate_dh | bool
 
-- include_tasks: download.yml
+- include_tasks: download.yml  # noqa name[missing]
   when:
     - easyrsa_download | length
       or easyrsa_download_pki | bool
