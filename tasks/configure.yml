@@ -14,8 +14,6 @@
   template:
     src: vars.j2
     dest: "{{ easyrsa_pki_dir }}/vars"
-    owner: root
-    group: root
     mode: 0o755
 
 - name: Create CA
