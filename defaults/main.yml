@@ -40,8 +40,8 @@ easyrsa_crl_handlers: []
 easyrsa_download_pki: false
 easyrsa_download_pki_extract: true
 easyrsa_download_dir: '/tmp/'
-easyrsa_download_user: "{{ lookup('pipe', 'id --user --name') }}"
-easyrsa_download_group: "{{ lookup('pipe', 'id --group --name') }}"
+easyrsa_download_user: "{{ lookup('pipe', 'id -un') }}"
+easyrsa_download_group: "{{ lookup('pipe', 'id -gn') }}"
 easyrsa_to_pkcs12: []
 easyrsa_to_pkcs8: []
 easyrsa_to_pkcs7: []

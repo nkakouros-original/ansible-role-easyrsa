@@ -224,12 +224,12 @@ argument_specs:
 
       easyrsa_download_user:
         type: str
-        default: "{{ lookup('pipe', 'id --user --name') }}"
+        default: "{{ lookup('pipe', 'id -un') }}"
         description: 'The user that will own the downloaded certs/keys.'
 
       easyrsa_download_group:
         type: str
-        default: "{{ lookup('pipe', 'id --group --name') }}"
+        default: "{{ lookup('pipe', 'id -gn') }}"
         description: 'The group that will own the downloaded certs/keys.'
       # }}}
       # Conversions {{{

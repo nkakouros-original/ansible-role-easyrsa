@@ -14,8 +14,6 @@ Requirements
 - The role is being tested against Ubuntu 18.04 but it should work with any other
 Linux distro as well.
 
-- `git` should be already installed.
-
 - This role does **not** need to be run as root, although is supports it.
 
 Role Variables

@@ -20,9 +20,10 @@
   # owner to the download user.
 
 - name: Download whole pki
+  when: easyrsa_download_pki | bool
   block:
     - name: Create pki zip
-      archive:
+      community.general.archive:
         path: "{{ easyrsa_pki_dir }}/*"
         # using a glob so that the parent folder is not included in the archive
         dest: "{{ easyrsa_pki_dir }}.zip"
@@ -52,6 +53,9 @@
         # changed only if the zip creation itself reports back as changed.
 
     - name: Extract zip file
+      delegate_to: localhost
+      become: "{{ easyrsa_download_user != ansible_user_id }}"
+      when: easyrsa_download_pki_extract | bool
       block:
         - name: Create extraction folder
           file:
@@ -71,10 +75,6 @@
             # permission and idempotence issues for `fetch` above.
             owner: "{{ easyrsa_download_user }}"
             group: "{{ easyrsa_download_group }}"
-      delegate_to: localhost
-      become: "{{ easyrsa_download_user != ansible_user_id }}"
-      when: easyrsa_download_pki_extract | bool
-  when: easyrsa_download_pki | bool
 
 - name: Download certificates
   fetch:
