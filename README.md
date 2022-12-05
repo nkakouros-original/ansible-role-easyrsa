@@ -16,8 +16,7 @@ Linux distro as well.
 
 - `git` should be already installed.
 
-- This role needs to be run with `become: true`, i.e. it assumes it runs as the
-  root user.
+- This role does **not** need to be run as root, although is supports it.
 
 Role Variables
 --------------
