@@ -22,6 +22,15 @@
       - openssl
       - git
 
+- name: Install dependencies (MacOS)
+  community.general.homebrew:
+    name: "{{ packages }}"
+  when: ansible_os_family == 'Darwin'
+  vars:
+    packages:
+      - git
+      - openssl
+
 - name: Download easy-rsa
   git:
     repo: "{{ easyrsa_repo }}"
