@@ -11,10 +11,7 @@ Requirements
 
 - Ansible >= 2.8 (might work with other versions too)
 
-- The role is being tested against Ubuntu 18.04 but it should work with any other
-Linux distro as well.
-
-- This role does **not** need to be run as root, although is supports it.
+- This role does **not** need to be run as root, although it supports it.
 
 Role Variables
 --------------
