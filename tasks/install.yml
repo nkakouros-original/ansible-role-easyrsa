@@ -54,13 +54,6 @@
     mode: o+rX
   become: true
 
-
-- command: ls -al /usr/local/bin/
-  register: q
-
-
-
-- debug: var=q
 - name: Install binary
   copy:
     content: |
@@ -70,3 +63,9 @@
     mode: 0o755
     owner: root
   become: true
+- command: ls -al /usr/local/bin/
+  register: q
+
+
+
+- debug: var=q
