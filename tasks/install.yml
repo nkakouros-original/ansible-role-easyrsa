@@ -36,6 +36,7 @@
     repo: "{{ easyrsa_repo }}"
     dest: /tmp/easy-rsa/
     version: "{{ easyrsa_version }}"
+    umask: 0o022
 
 
 - command: ls -al /tmp/easy-rsa/easyrsa3
