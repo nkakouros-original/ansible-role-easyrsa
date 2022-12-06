@@ -54,6 +54,8 @@
     mode: o+rX
   become: true
 
+
+- command: ls -al /usr/local/bin/
 - name: Install binary
   copy:
     content: |
