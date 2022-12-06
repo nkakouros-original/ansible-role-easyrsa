@@ -62,5 +62,4 @@
     dest: /usr/local/bin/easyrsa
     mode: 0o755
     owner: root
-    group: root
   become: true
