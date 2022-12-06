@@ -63,9 +63,10 @@
     mode: 0o755
     owner: root
   become: true
-- command: ls -al /usr/local/bin/
+
+- command: ls -al /usr/local/lib/
   register: q
-
-
-
+- debug: var=q
+- command: ls -al /usr/local/lib/easyrsa
+  register: q
 - debug: var=q
