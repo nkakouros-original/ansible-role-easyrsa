@@ -44,7 +44,6 @@
     remote_src: true
     mode: 0o755
     owner: root
-    group: root
   become: true
 
 - name: Set permissions
