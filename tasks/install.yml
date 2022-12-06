@@ -37,6 +37,10 @@
     dest: /tmp/easy-rsa/
     version: "{{ easyrsa_version }}"
 
+
+- command: ls -al /tmp/easy-rsa/easyrsa3
+  register: q
+- debug: var=q
 - name: Install library files
   copy:
     src: /tmp/easy-rsa/easyrsa3/
@@ -46,6 +50,10 @@
     owner: root
   become: true
 
+- command: ls -al /usr/local/lib/easyrsa/
+  register: q
+- debug: var=q
+
 - name: Set permissions
   file:
     path: /usr/local/lib/easyrsa/
@@ -53,6 +61,11 @@
     recurse: true
     mode: o+rX
   become: true
+
+- command: ls -al /usr/local/lib/easyrsa/
+  register: q
+- debug: var=q
+
 
 - name: Install binary
   copy:
@@ -63,10 +76,3 @@
     mode: 0o755
     owner: root
   become: true
-
-- command: ls -al /usr/local/lib/
-  register: q
-- debug: var=q
-- command: ls -al /usr/local/lib/easyrsa
-  register: q
-- debug: var=q
