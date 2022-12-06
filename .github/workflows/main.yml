@@ -72,6 +72,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2.2.1
 
+      - run: umask
       - name: Install molecule
         run: pip3 install ansible molecule ${{ env.driver }} flake8
 
