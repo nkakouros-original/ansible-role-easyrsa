@@ -15,7 +15,7 @@ defaults = {}
 with open("./meta/argument_specs.yml") as f:
     arg_specs = yaml.round_trip_load(f, preserve_quotes=True)
 
-for name, spec in arg_specs['arguments_specs']['options'].items():
+for name, spec in arg_specs['arguments_spec']['main']['options'].items():
     if spec.get("required"):
         continue
 

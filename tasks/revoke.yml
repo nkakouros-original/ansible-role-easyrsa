@@ -10,3 +10,4 @@
     loop_var: _easyrsa__cert
   notify: easyrsa-regen-crl
   register: _easyrsa_crl_regeneration_needed_due_to_revoke
+  changed_when: _easyrsa_crl_regeneration_needed_due_to_revoke is success

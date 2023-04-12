@@ -9,6 +9,7 @@
 - name: Replace PKI
   command: easyrsa init-pki
   when: easyrsa_replace_pki | bool
+  changed_when: true
 
 - name: Upload vars file
   template:

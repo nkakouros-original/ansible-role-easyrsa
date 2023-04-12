@@ -4,3 +4,4 @@
   command: easyrsa gen-crl
   notify: "{{ easyrsa_crl_handlers }}"
   listen: easyrsa-regen-crl
+  changed_when: true
