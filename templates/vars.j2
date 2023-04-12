@@ -148,13 +148,13 @@ set_var EASYRSA_NS_SUPPORT "{{ easyrsa_conf_ns_support }}"
 # When NS_SUPPORT is set to "yes", this field is added as the nsComment field.
 # Set this blank to omit it. With NS_SUPPORT set to "no" this field is ignored.
 
-set_var EASYRSA_NS_COMMENT {{ easyrsa_conf_ns_comment }}
+set_var EASYRSA_NS_COMMENT "{{ easyrsa_conf_ns_comment }}"
 
 # A temp file used to stage cert extensions during signing. The default should
 # be fine for most users; however, some users might want an alternative under a
 # RAM-based FS, such as /dev/shm or /tmp on some systems.
 
-set_var EASYRSA_TEMP_FILE {{ easyrsa_conf_temp_file }}
+set_var EASYRSA_TEMP_FILE "{{ easyrsa_conf_temp_file }}"
 
 # !!
 # NOTE: ADVANCED OPTIONS BELOW THIS POINT
@@ -180,7 +180,7 @@ set_var EASYRSA_TEMP_FILE {{ easyrsa_conf_temp_file }}
 # fallback to $EASYRSA for the 'x509-types' dir.  You may override this
 # detection with an explicit dir here.
 #
-set_var EASYRSA_EXT_DIR {{ easyrsa_conf_ext_dir }}
+set_var EASYRSA_EXT_DIR "{{ easyrsa_conf_ext_dir }}"
 
 # OpenSSL config file:
 # If you need to use a specific openssl config file, you can reference it here.
@@ -189,13 +189,13 @@ set_var EASYRSA_EXT_DIR {{ easyrsa_conf_ext_dir }}
 # specific and you cannot just use a standard config file, so this is an
 # advanced feature.
 
-set_var EASYRSA_SSL_CONF {{ easyrsa_conf_ssl_conf }}
+set_var EASYRSA_SSL_CONF "{{ easyrsa_conf_ssl_conf }}"
 
 # Default CN:
 # This is best left alone. Interactively you will set this manually, and BATCH
 # callers are expected to set this themselves.
 
-set_var EASYRSA_REQ_CN {{ easyrsa_conf_req_cn }}
+set_var EASYRSA_REQ_CN "{{ easyrsa_conf_req_cn }}"
 
 # Cryptographic digest to use.
 # Do not change this default unless you understand the security implications.

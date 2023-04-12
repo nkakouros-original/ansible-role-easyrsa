@@ -22,5 +22,6 @@
   register: _result
   failed_when:
     - _result is failed
-    - _result.stderr is not search('you already seem to have one set up')
+    - _result.stderr | default(_result.stdout, true)
+      is not search('you already seem to have one set up')
   changed_when: _result is not failed
