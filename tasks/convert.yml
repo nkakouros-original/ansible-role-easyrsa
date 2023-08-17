@@ -13,12 +13,10 @@
 
 - name: Convert private keys to PKCS#8
   command: >-
-    openssl pkcs8 -topk8
-      -in '{{ easyrsa_pki_dir }}/private/{{ item.name }}.key'
-      -out '{{ easyrsa_pki_dir }}/private/{{ item.name }}.p8'
-      {{ '-passin pass:' + item.pass | string if item.pass | default(None) else '' }}
-      {{ '-passout pass:' + item.pass | string if item.pass | default(None) else
-        '-nocrypt' }}
+    easyrsa
+      {{ '--passin=pass:' + item.pass | string if item.pass | default(None) else '' }}
+      {{ '--passout=pass:' + item.pass | string if item.pass | default(None) else '' }}
+    export-p8 {{ item.name }}
   args:
     creates: "{{ easyrsa_pki_dir }}/private/{{ item.name }}.p8"
   loop: "{{ easyrsa_to_pkcs8 }}"
@@ -33,12 +31,10 @@
 
 - name: Convert private keys to PKCS#1
   command: >-
-    openssl rsa
-      -in '{{ easyrsa_pki_dir }}/private/{{ item.name }}.key'
-      -out '{{ easyrsa_pki_dir }}/private/{{ item.name }}.p1'
-      {{ '-passin pass:' + item.pass | string if item.pass | default(None) else '' }}
-      {{ '-aes256 -passout pass:' + item.pass | string if item.pass | default(None) else
-         '' }}
+    easyrsa
+      {{ '--passin=pass:' + item.pass | string if item.pass | default(None) else '' }}
+      {{ '--passout=pass:' + item.pass | string if item.pass | default(None) else '' }}
+    export-p1 {{ item.name }}
   args:
     creates: "{{ easyrsa_pki_dir }}/private/{{ item.name }}.p1"
   loop: "{{ easyrsa_to_pkcs1 }}"
