@@ -1,5 +1,11 @@
 ---
 
+- name: Create parent of easyrsa_pki_dir
+  file:
+    path: "{{ easyrsa_pki_dir | dirname }}"
+    state: directory
+    mode: 0o755
+
 - name: Initiate PKI
   command: easyrsa --batch init-pki
   args:
