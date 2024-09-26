@@ -15,7 +15,7 @@ on:  # yamllint disable-line rule:truthy
   workflow_dispatch: ~
 
 jobs:
-  build:
+  build-linux:
     runs-on: ubuntu-latest
 
     env:
@@ -59,3 +59,35 @@ jobs:
           CUSTOM_MOLECULE_CONTAINER_IMAGE: ${{ matrix.distro.image }}
           CUSTOM_MOLECULE_INSTANCE_NAME: ${{ env.role_name}}-${{ matrix.distro.instance_name }}
           CUSTOM_MOLECULE_DRIVER: ${{ env.driver }}
+
+  build-mac:
+    runs-on: macos-12
+
+    env:
+      role_name: nkakouros.easyrsa
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v2.2.1
+
+      - run: umask
+      - name: Install molecule
+        run: pip3 install ansible molecule ${{ env.driver }} flake8
+
+      - name: Get linter-config repo
+        uses: actions/checkout@v3
+        with:
+          repository: nkakouros-original/linter-configs
+          path: linter-configs
+
+      - name: Copy linter configs in place
+        run: >-
+          cp -r
+          ${{ github.workspace }}/linter-configs/configs/.
+          ${{ github.workspace }}/;
+          rm -rf linter-configs;
+
+      - name: Run molecule
+        run: molecule -c molecule.yml -c molecule.delegated.yml test

@@ -22,12 +22,26 @@
       - openssl
       - git
 
+- name: Install dependencies (MacOS)
+  community.general.homebrew:
+    name: "{{ packages }}"
+  when: ansible_os_family == 'Darwin'
+  vars:
+    packages:
+      - git
+      - openssl
+
 - name: Download easy-rsa
   git:
     repo: "{{ easyrsa_repo }}"
     dest: /tmp/easy-rsa/
     version: "{{ easyrsa_version }}"
+    umask: 0o022
 
+
+- command: ls -al /tmp/easy-rsa/easyrsa3
+  register: q
+- debug: var=q
 - name: Install library files
   copy:
     src: /tmp/easy-rsa/easyrsa3/
@@ -35,8 +49,11 @@
     remote_src: true
     mode: 0o755
     owner: root
-    group: root
   become: true
+
+- command: ls -al /usr/local/lib/easyrsa/
+  register: q
+- debug: var=q
 
 - name: Set permissions
   file:
@@ -46,6 +63,11 @@
     mode: o+rX
   become: true
 
+- command: ls -al /usr/local/lib/easyrsa/
+  register: q
+- debug: var=q
+
+
 - name: Install binary
   copy:
     content: |
@@ -54,5 +76,4 @@
     dest: /usr/local/bin/easyrsa
     mode: 0o755
     owner: root
-    group: root
   become: true
