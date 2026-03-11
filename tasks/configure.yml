@@ -7,13 +7,13 @@
     mode: 0o755
 
 - name: Initiate PKI
-  command: easyrsa --batch init-pki
+  command: easyrsa --pki-dir={{ easyrsa_pki_dir }} init-pki
   args:
     creates: "{{ easyrsa_pki_dir }}/private"
   when: not easyrsa_replace_pki | bool
 
 - name: Replace PKI
-  command: easyrsa init-pki
+  command: easyrsa --pki-dir={{ easyrsa_pki_dir }} init-pki
   when: easyrsa_replace_pki | bool
   changed_when: true
 
@@ -24,7 +24,7 @@
     mode: 0o755
 
 - name: Create CA
-  command: easyrsa build-ca nopass
+  command: easyrsa --pki-dir={{ easyrsa_pki_dir }} build-ca nopass
   register: _result
   failed_when:
     - _result is failed
