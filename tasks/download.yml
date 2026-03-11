@@ -15,7 +15,8 @@
     owner: "{{ easyrsa_download_user if not _result.stat.exists else omit }}"
     mode: "{{ '0o755' if not _result.stat.exists else omit }}"
   delegate_to: localhost
-  # Not using `become` or `owner` (unless a new directory) for the same reason
+  become: false
+  # Not using `become: true` or `owner` (unless a new directory) for the same reason
   # as above. For example, if `/tmp` is the `path`, I don't want to change the
   # owner to the download user.
 
